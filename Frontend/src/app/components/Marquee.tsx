@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function Marquee() {
+  const { t } = useLanguage();
   const items = [
-    "EXPERIENCE THE WORLD",
-    "NATURAL FREEDOM",
-    "INSPIRING JOURNEYS",
-    "TOP DESTINATIONS",
-    "EXPLORE NOW",
+    t("experienceWorld"),
+    t("naturalFreedom"),
+    t("inspiringJourneys"),
+    t("topDestinationsMarquee"),
+    t("exploreNow"),
   ];
 
   return (

@@ -5,6 +5,7 @@ import { Card } from "../components/ui/card";
 import React, { useState } from "react";
 import heroBg from "../../assets/h1-bg01.jpg";
 import { ParallaxShowcase } from "../components/ParallaxShowcase";
+import { createBookingRequest } from "../services/apiService";
 
 const wavyButtonStyle = `
   @keyframes wavyFlow {
@@ -35,19 +36,19 @@ const wavyButtonStyle = `
 `;
 
 const tours = [
-  { id: 1, name: "Cairo & Pyramids Explorer", price: 650, rating: 4.7, location: "Egypt" },
-  { id: 2, name: "Istanbul Package", price: 750, rating: 4.9, location: "Turkey" },
-  { id: 3, name: "Dubai Luxury Experience", price: 1200, rating: 4.9, location: "UAE" },
-  { id: 4, name: "Maldives Paradise Retreat", price: 1500, rating: 5.0, location: "Maldives" },
-  { id: 5, name: "Aqaba Beach Trip", price: 400, rating: 4.8, location: "Jordan" },
-  { id: 6, name: "Sharm El Sheikh Luxury", price: 900, rating: 5.0, location: "Egypt" },
+  { id: 1, name: "Cairo & Pyramids Explorer", price: 650, rating: 4.7, location: "Egypt", duration: "4 Days / 3 Nights", type: "History", description: "Pyramids, Egyptian Museum, Nile dinner cruise, and guided cultural visits." },
+  { id: 2, name: "Istanbul Package", price: 750, rating: 4.9, location: "Turkey", duration: "5 Days / 4 Nights", type: "Culture", description: "Historic Istanbul, Bosphorus cruise, Grand Bazaar, and guided landmark tours." },
+  { id: 3, name: "Dubai Luxury Experience", price: 1200, rating: 4.9, location: "UAE", duration: "6 Days / 5 Nights", type: "Luxury", description: "Burj Khalifa, desert safari, luxury hotel stay, marina cruise, and shopping tours." },
+  { id: 4, name: "Maldives Paradise Retreat", price: 1500, rating: 5.0, location: "Maldives", duration: "7 Days / 6 Nights", type: "Relaxation", description: "Overwater villa, beach escape, snorkeling, water sports, and all-inclusive relaxation." },
+  { id: 5, name: "Aqaba Beach Trip", price: 400, rating: 4.8, location: "Jordan", duration: "4 Days / 3 Nights", type: "Beach", description: "Red Sea beach stay, snorkeling, optional Wadi Rum trip, and internal transport." },
+  { id: 6, name: "Sharm El Sheikh Luxury", price: 900, rating: 5.0, location: "Egypt", duration: "5 Days / 4 Nights", type: "Beach", description: "All-inclusive resort, Red Sea activities, beach access, spa facilities, and entertainment." },
 ];
 
 const services = [
-  { id: 1, name: "Flight Booking", icon: Plane, color: "from-blue-500 to-cyan-500" },
-  { id: 2, name: "Hotel Reservations", icon: Hotel, color: "from-amber-500 to-orange-500" },
-  { id: 3, name: "Tour Packages", icon: Package, color: "from-green-500 to-emerald-500" },
-  { id: 4, name: "Visa Services", icon: Briefcase, color: "from-purple-500 to-pink-500" },
+  { id: 1, name: "Flight Booking", icon: Plane, color: "from-blue-500 to-cyan-500", price: 120, description: "Best available flight options with flexible support." },
+  { id: 2, name: "Hotel Reservations", icon: Hotel, color: "from-amber-500 to-orange-500", price: 150, description: "Upgrade or extend your hotel stay with trusted partners." },
+  { id: 3, name: "Private Tour Guide", icon: Package, color: "from-green-500 to-emerald-500", price: 180, description: "Private local guide for a more personal itinerary." },
+  { id: 4, name: "Visa Services", icon: Briefcase, color: "from-purple-500 to-pink-500", price: 90, description: "Document guidance and application support." },
 ];
 
 const steps = [
@@ -64,17 +65,37 @@ export function Booking() {
     email: "",
     phone: "",
     guests: 1,
+    travelDate: "",
+    tripType: "Any",
+    specialRequests: "",
+    paymentMethod: "Pay at Office",
   });
   const [selectedTour, setSelectedTour] = useState<number | null>(null);
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [priceRange, setPriceRange] = useState(1500);
   const [searchTerm, setSearchTerm] = useState("");
+  const [destinationFilter, setDestinationFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("recommended");
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState("");
 
-  const filteredTours = tours.filter(
-    (tour) =>
+  const destinations = ["All", ...Array.from(new Set(tours.map((tour) => tour.location)))];
+  const tripTypes = ["Any", ...Array.from(new Set(tours.map((tour) => tour.type)))];
+  const filteredTours = tours
+    .filter((tour) =>
       tour.price <= priceRange &&
-      tour.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      (destinationFilter === "All" || tour.location === destinationFilter) &&
+      (formData.tripType === "Any" || tour.type === formData.tripType) &&
+      (tour.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tour.location.toLowerCase().includes(searchTerm.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price;
+      if (sortBy === "price-high") return b.price - a.price;
+      if (sortBy === "rating") return b.rating - a.rating;
+      return b.rating - a.rating || a.price - b.price;
+    });
 
   const handleServiceToggle = (serviceId: number) => {
     setSelectedServices((prev) =>
@@ -82,6 +103,46 @@ export function Booking() {
         ? prev.filter((id) => id !== serviceId)
         : [...prev, serviceId]
     );
+  };
+
+  const selectedTourDetails = tours.find((tour) => tour.id === selectedTour);
+  const servicesTotal = services
+    .filter((service) => selectedServices.includes(service.id))
+    .reduce((total, service) => total + service.price, 0);
+  const bookingTotal = (selectedTourDetails?.price || 0) + servicesTotal;
+
+  const completeBooking = async () => {
+    if (!selectedTourDetails || bookingSubmitting || bookingSuccess) return;
+
+    setBookingSubmitting(true);
+    setBookingError("");
+
+    try {
+      await createBookingRequest({
+        bookingDate: formData.travelDate || new Date().toISOString(),
+        travelers: formData.guests,
+        specialRequests: formData.specialRequests,
+        customer: {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        selectedServices: services
+          .filter((service) => selectedServices.includes(service.id))
+          .map((service) => service.name),
+        destination: `${selectedTourDetails.name} - ${selectedTourDetails.location}`,
+        tripType: formData.tripType,
+        paymentMethod: formData.paymentMethod,
+        totalPrice: bookingTotal,
+        notes: selectedTourDetails.description,
+      });
+
+      setBookingSuccess(true);
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : "Booking failed. Please try again.");
+    } finally {
+      setBookingSubmitting(false);
+    }
   };
 
   return (
@@ -120,21 +181,26 @@ export function Booking() {
           </div>
         </section>
 
+        {/* Travel Gallery Section */}
+        <section className="w-full">
+          <ParallaxShowcase />
+        </section>
+
         {/* Step Indicator */}
         <section className="relative py-12 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-white/20 backdrop-blur-sm" />
-          <div className="relative z-10 max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
+          <div className="relative z-10 mx-auto max-w-5xl px-4">
+            <div className="mx-auto mb-8 flex max-w-4xl items-center justify-center">
               {steps.map((step, idx) => (
-                <motion.div key={idx} className="flex items-center flex-1">
+                <motion.div key={idx} className="flex min-w-0 flex-1 items-center last:flex-none">
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     transition={{ delay: idx * 0.1 }}
                     className={`relative w-16 h-16 rounded-full flex items-center justify-center font-black text-2xl shadow-xl ${
                       currentStep >= parseInt(step.number)
-                        ? "bg-gradient-to-br from-[#F59E0B] to-[#ff8c00] text-white"
-                        : "bg-white/60 text-[#0a5d7a] backdrop-blur"
+                        ? "bg-gradient-to-br from-[#021427] to-[#0a5d7a] text-white"
+                        : "bg-white/70 text-[#021427]/55 backdrop-blur"
                     }`}
                   >
                     {step.icon}
@@ -146,7 +212,7 @@ export function Booking() {
                       transition={{ delay: idx * 0.15, duration: 0.8 }}
                       className={`flex-1 h-1 mx-2 rounded-full origin-left ${
                         currentStep > parseInt(step.number)
-                          ? "bg-gradient-to-r from-[#F59E0B] to-[#ff8c00]"
+                          ? "bg-gradient-to-r from-[#021427] to-[#0a5d7a]"
                           : "bg-white/30"
                       }`}
                     />
@@ -154,11 +220,11 @@ export function Booking() {
                 </motion.div>
               ))}
             </div>
-            <div className="flex justify-between text-xs md:text-sm font-bold text-[#0a5d7a]">
+            <div className="mx-auto grid max-w-4xl grid-cols-4 gap-2 text-center text-xs font-bold text-[#021427] md:text-sm">
               {steps.map((step) => (
                 <span
                   key={step.number}
-                  className={`${currentStep >= parseInt(step.number) ? "text-[#F59E0B]" : "text-[#0a5d7a]/50"}`}
+                  className={`${currentStep >= parseInt(step.number) ? "text-[#021427]" : "text-[#021427]/45"}`}
                 >
                   {step.title}
                 </span>
@@ -241,6 +307,47 @@ export function Booking() {
                       ))}
                     </select>
                   </motion.div>
+
+                  <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.45 }}>
+                    <label className="block text-sm font-bold text-[#0a5d7a] mb-3 uppercase tracking-wide">
+                      Travel Date *
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.travelDate}
+                      onChange={(e) => setFormData({ ...formData, travelDate: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] focus:outline-none focus:border-[#F59E0B] focus:bg-white/80 transition-all duration-300"
+                    />
+                  </motion.div>
+
+                  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                    <label className="block text-sm font-bold text-[#0a5d7a] mb-3 uppercase tracking-wide">
+                      Trip Style
+                    </label>
+                    <select
+                      value={formData.tripType}
+                      onChange={(e) => setFormData({ ...formData, tripType: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] focus:outline-none focus:border-[#F59E0B] focus:bg-white/80 transition-all duration-300"
+                    >
+                      {tripTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </motion.div>
+
+                  <motion.div className="md:col-span-2" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+                    <label className="block text-sm font-bold text-[#0a5d7a] mb-3 uppercase tracking-wide">
+                      Special Requests
+                    </label>
+                    <textarea
+                      placeholder="Tell us about hotel preferences, airport pickup, children, dietary needs..."
+                      value={formData.specialRequests}
+                      onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
+                      className="min-h-28 w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] placeholder-[#0a5d7a]/40 focus:outline-none focus:border-[#F59E0B] focus:bg-white/80 transition-all duration-300"
+                    />
+                  </motion.div>
                 </div>
 
                 <motion.div
@@ -280,7 +387,7 @@ export function Booking() {
                   Choose Your Perfect Tour
                 </h2>
 
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="grid gap-5 mb-8 md:grid-cols-4">
                   {/* Search */}
                   <div className="md:col-span-2">
                     <div className="relative">
@@ -295,6 +402,21 @@ export function Booking() {
                     </div>
                   </div>
 
+                  <div>
+                    <label className="block text-xs font-bold text-[#0a5d7a] mb-2 uppercase">Destination</label>
+                    <select
+                      value={destinationFilter}
+                      onChange={(e) => setDestinationFilter(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] focus:outline-none focus:border-[#F59E0B]"
+                    >
+                      {destinations.map((destination) => (
+                        <option key={destination} value={destination}>
+                          {destination}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Price Filter */}
                   <div>
                     <label className="block text-xs font-bold text-[#0a5d7a] mb-2 uppercase">Max Price: ${priceRange}</label>
@@ -307,6 +429,52 @@ export function Booking() {
                       className="w-full"
                     />
                   </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-[#0a5d7a] mb-2 uppercase">Trip Style</label>
+                    <select
+                      value={formData.tripType}
+                      onChange={(e) => setFormData({ ...formData, tripType: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] focus:outline-none focus:border-[#F59E0B]"
+                    >
+                      {tripTypes.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#0a5d7a] mb-2 uppercase">Sort By</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-[#F59E0B]/30 bg-white/60 backdrop-blur text-[#0a5d7a] focus:outline-none focus:border-[#F59E0B]"
+                    >
+                      <option value="recommended">Recommended</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="rating">Highest Rating</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setDestinationFilter("All");
+                        setPriceRange(1500);
+                        setSortBy("recommended");
+                        setFormData({ ...formData, tripType: "Any" });
+                      }}
+                      className="inline-flex h-[3.25rem] w-full items-center justify-center gap-2 rounded-xl border-2 border-[#021427]/20 bg-white/60 px-4 text-sm font-black text-[#021427] transition hover:bg-white"
+                    >
+                      <Filter className="h-4 w-4" />
+                      Reset
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -317,7 +485,7 @@ export function Booking() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.1 }}
                       onClick={() => setSelectedTour(tour.id)}
-                      className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 ${
+                      className={`relative cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 ${
                         selectedTour === tour.id
                           ? "border-[#F59E0B] bg-gradient-to-br from-[#F59E0B]/20 to-[#0a5d7a]/10"
                           : "border-white/40 bg-white/40 hover:border-[#F59E0B]/60"
@@ -329,14 +497,21 @@ export function Booking() {
                         </div>
                       )}
                       <h3 className="text-lg font-bold text-[#0a5d7a] mb-2">{tour.name}</h3>
-                      <p className="text-sm text-[#1a3a52] mb-3 flex items-center gap-2">
+                      <p className="text-sm text-[#1a3a52] mb-2 flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-[#F59E0B]" /> {tour.location}
                       </p>
+                      <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#1a3a52]">
+                        <Calendar className="h-4 w-4 text-[#F59E0B]" /> {tour.duration}
+                      </p>
+                      <p className="mb-4 line-clamp-2 text-sm leading-6 text-[#1a3a52]/80">{tour.description}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-2xl font-black text-[#F59E0B]">${tour.price}</span>
                         <span className="flex items-center gap-1 text-sm font-bold text-yellow-600">
                           ⭐ {tour.rating}
                         </span>
+                      </div>
+                      <div className="mt-4 rounded-full bg-[#021427]/10 px-3 py-1 text-center text-xs font-black uppercase tracking-[0.12em] text-[#021427]">
+                        {tour.type}
                       </div>
                     </motion.div>
                   ))}
@@ -392,7 +567,7 @@ export function Booking() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         onClick={() => handleServiceToggle(service.id)}
-                        className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 ${
+                        className={`relative cursor-pointer p-6 rounded-2xl border-2 transition-all duration-300 ${
                           selectedServices.includes(service.id)
                             ? "border-[#F59E0B] bg-gradient-to-br from-[#F59E0B]/20 to-[#0a5d7a]/10"
                             : "border-white/40 bg-white/40 hover:border-[#F59E0B]/60"
@@ -406,7 +581,15 @@ export function Booking() {
                         <div className={`inline-block p-4 rounded-xl bg-gradient-to-br ${service.color} mb-4`}>
                           <Icon className="h-6 w-6 text-white" />
                         </div>
-                        <h3 className="text-lg font-bold text-[#0a5d7a]">{service.name}</h3>
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <h3 className="text-lg font-bold text-[#0a5d7a]">{service.name}</h3>
+                            <p className="mt-2 text-sm leading-6 text-[#1a3a52]/75">{service.description}</p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-[#021427]/10 px-3 py-1 text-sm font-black text-[#021427]">
+                            +${service.price}
+                          </span>
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -442,25 +625,41 @@ export function Booking() {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-white/30 backdrop-blur-sm" />
             <div className="relative z-10 max-w-4xl mx-auto px-4">
-              <Card className="bg-gradient-to-br from-white/85 via-white/80 to-white/75 backdrop-blur-xl border border-white/90 rounded-3xl p-8 md:p-12 shadow-2xl mb-8">
+              <Card className="overflow-hidden bg-gradient-to-br from-white/88 via-white/82 to-white/76 backdrop-blur-xl border border-white/90 rounded-3xl p-0 shadow-2xl mb-8">
+                <div className="bg-gradient-to-r from-[#021427] via-[#0a5d7a] to-[#021427] px-8 py-7 text-white md:px-12">
+                  <p className="text-xs font-black uppercase tracking-[0.3em] text-[#F59E0B]">Final Step</p>
                 <h2
-                  className="text-4xl md:text-5xl font-black text-[#0a5d7a] mb-8"
+                    className="mt-2 text-4xl md:text-5xl font-black"
                   style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                 >
                   Review Your Booking
                 </h2>
+                  <p className="mt-3 text-sm font-semibold text-white/75">Check the details before confirming your trip.</p>
+                </div>
 
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-[#F59E0B]/10 to-[#0a5d7a]/10 p-6 rounded-2xl border border-white/60">
-                    <h3 className="text-sm font-bold text-[#0a5d7a] uppercase mb-4 flex items-center gap-2">
+                <div className="p-8 md:p-12">
+                  {bookingSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800 shadow-lg shadow-emerald-900/5"
+                    >
+                      <p className="text-lg font-black">Booking completed successfully</p>
+                      <p className="mt-1 text-sm font-semibold">Your trip registration has been received. We'll contact you soon with the next steps.</p>
+                    </motion.div>
+                  )}
+
+                  <div className="space-y-6">
+                  <div className="rounded-2xl border border-white/70 bg-white/65 p-6 shadow-[0_14px_40px_rgba(2,20,39,0.08)]">
+                    <h3 className="text-sm font-black text-[#021427] uppercase mb-4 flex items-center gap-2 tracking-[0.16em]">
                       <span>👤</span> Personal Information
                     </h3>
                     <p className="text-[#1a3a52]"><strong>{formData.fullName}</strong> • {formData.email} • {formData.phone}</p>
                     <p className="text-[#1a3a52] mt-2"><strong>{formData.guests}</strong> Guest{formData.guests > 1 ? "s" : ""}</p>
                   </div>
 
-                  <div className="bg-gradient-to-r from-[#F59E0B]/10 to-[#0a5d7a]/10 p-6 rounded-2xl border border-white/60">
-                    <h3 className="text-sm font-bold text-[#0a5d7a] uppercase mb-4 flex items-center gap-2">
+                  <div className="rounded-2xl border border-white/70 bg-white/65 p-6 shadow-[0_14px_40px_rgba(2,20,39,0.08)]">
+                    <h3 className="text-sm font-black text-[#021427] uppercase mb-4 flex items-center gap-2 tracking-[0.16em]">
                       <span>✈️</span> Selected Tour
                     </h3>
                     <p className="text-lg font-bold text-[#0a5d7a]">
@@ -472,8 +671,8 @@ export function Booking() {
                   </div>
 
                   {selectedServices.length > 0 && (
-                    <div className="bg-gradient-to-r from-[#F59E0B]/10 to-[#0a5d7a]/10 p-6 rounded-2xl border border-white/60">
-                      <h3 className="text-sm font-bold text-[#0a5d7a] uppercase mb-4 flex items-center gap-2">
+                    <div className="rounded-2xl border border-white/70 bg-white/65 p-6 shadow-[0_14px_40px_rgba(2,20,39,0.08)]">
+                      <h3 className="text-sm font-black text-[#021427] uppercase mb-4 flex items-center gap-2 tracking-[0.16em]">
                         <span>🎁</span> Selected Services
                       </h3>
                       <div className="flex flex-wrap gap-3">
@@ -482,46 +681,85 @@ export function Booking() {
                           .map((service) => (
                             <span
                               key={service.id}
-                              className="inline-block bg-[#F59E0B]/30 text-[#0a5d7a] px-4 py-2 rounded-full font-semibold"
+                              className="inline-block rounded-full bg-[#021427]/10 px-4 py-2 font-black text-[#021427]"
                             >
-                              {service.name}
+                              {service.name} +${service.price}
                             </span>
                           ))}
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-gradient-to-br from-[#0a5d7a] to-[#1a3a52] p-6 rounded-2xl text-white">
+                  <div className="rounded-2xl border border-white/70 bg-white/65 p-6 shadow-[0_14px_40px_rgba(2,20,39,0.08)]">
+                    <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-[#021427]">
+                      <Calendar className="h-4 w-4 text-[#F59E0B]" />
+                      Travel Preferences
+                    </h3>
+                    <div className="grid gap-3 text-sm font-semibold text-[#1a3a52] md:grid-cols-2">
+                      <p>Date: <strong>{formData.travelDate || "Not selected"}</strong></p>
+                      <p>Style: <strong>{formData.tripType}</strong></p>
+                      <p className="md:col-span-2">Payment: <strong>{formData.paymentMethod}</strong></p>
+                    </div>
+                    {formData.specialRequests && (
+                      <p className="mt-4 rounded-xl bg-[#021427]/5 p-4 text-sm font-semibold leading-6 text-[#1a3a52]">
+                        {formData.specialRequests}
+                      </p>
+                    )}
+                    <select
+                      value={formData.paymentMethod}
+                      onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                      className="mt-4 w-full rounded-xl border-2 border-[#F59E0B]/30 bg-white/70 px-4 py-3 font-bold text-[#0a5d7a] outline-none transition focus:border-[#F59E0B]"
+                    >
+                      <option>Pay at Office</option>
+                      <option>Bank Transfer</option>
+                      <option>Cash on Arrival</option>
+                      <option>Credit Card</option>
+                    </select>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-[#021427] to-[#0a5d7a] p-6 rounded-3xl text-white shadow-[0_22px_55px_rgba(2,20,39,0.22)]">
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-lg">Subtotal:</span>
-                      <span className="text-2xl font-black">${tours.find((t) => t.id === selectedTour)?.price || 0}</span>
+                      <span className="text-2xl font-black">${selectedTourDetails?.price || 0}</span>
                     </div>
                     <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/30">
                       <span className="text-lg">Services ({selectedServices.length}):</span>
-                      <span className="text-2xl font-black">+ ${selectedServices.length * 150}</span>
+                      <span className="text-2xl font-black">+ ${servicesTotal}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-2xl font-black">TOTAL:</span>
                       <span className="text-3xl font-black text-[#F59E0B]">
-                        ${(tours.find((t) => t.id === selectedTour)?.price || 0) + selectedServices.length * 150}
+                        ${bookingTotal}
                       </span>
                     </div>
                   </div>
                 </div>
 
+                {bookingError && (
+                  <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                    {bookingError}
+                  </div>
+                )}
+
                 <div className="flex gap-4 mt-8">
                   <button
-                    onClick={() => setCurrentStep(3)}
+                    onClick={() => {
+                      setBookingSuccess(false);
+                      setCurrentStep(3);
+                    }}
                     className="flex-1 rounded-xl text-[#0a5d7a] px-8 py-4 text-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-[#0a5d7a] bg-white/60 backdrop-blur-sm uppercase tracking-wide"
                   >
                     Back
                   </button>
                   <button
-                    className="flex-1 wavy-btn rounded-xl text-white px-8 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 border-b-4 border-[#F59E0B] bg-gradient-to-r from-[#0a5d7a] via-[#F59E0B] to-[#1a3a52] uppercase tracking-wide flex items-center justify-center gap-2"
+                    onClick={completeBooking}
+                    disabled={bookingSuccess || bookingSubmitting}
+                    className="flex-1 wavy-btn rounded-xl text-white px-8 py-4 text-lg font-bold shadow-xl hover:shadow-2xl transition-all duration-300 border-b-4 border-[#F59E0B] bg-gradient-to-r from-[#021427] via-[#0a5d7a] to-[#1a3a52] uppercase tracking-wide flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-75"
                     style={{ backgroundSize: "200% 200%" }}
                   >
-                    <span>Complete Booking</span>
+                    <span>{bookingSuccess ? "Booking Completed" : bookingSubmitting ? "Saving..." : "Complete Booking"}</span>
                   </button>
+                </div>
                 </div>
               </Card>
 
@@ -532,10 +770,6 @@ export function Booking() {
           </motion.section>
         )}
 
-        {/* Parallax Achievements Section */}
-        <section className="w-full">
-          <ParallaxShowcase />
-        </section>
       </div>
     </>
   );

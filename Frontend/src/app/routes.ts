@@ -11,8 +11,10 @@ import { Destination } from "./pages/Destination";
 import { OurServices } from "./pages/OurServices";
 import { Tours } from "./pages/Tours";
 import { FAQ } from "./pages/FAQ";
+import { AdminDashboard } from "./pages/AdminDashboard";
 
 export const router = createBrowserRouter([
+  { path: "/admin", Component: AdminDashboard },
   {
     path: "/",
     Component: Layout,

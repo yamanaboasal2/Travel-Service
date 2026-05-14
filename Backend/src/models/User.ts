@@ -17,13 +17,26 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    minlength: 6,
+    minlength: 3,
     select: false
   },
   role: {
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
+  },
+  phone: {
+    type: String,
+    default: ''
+  },
+  status: {
+    type: String,
+    enum: ['active', 'blocked'],
+    default: 'active'
+  },
+  lastLoginAt: {
+    type: Date,
+    default: null
   },
   createdAt: {
     type: Date,

@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import Booking from '../models/Booking';
 import Service from '../models/Service';
+import Offer from '../models/Offer';
 
 export const getAllBookings = async (req: Request, res: Response) => {
   try {
     const bookings = await Booking.find()
       .populate('userId', 'name email')
-      .populate('serviceId', 'title price');
+      .populate('serviceId', 'title price')
+      .populate('packageId', 'title price country duration');
     
     return res.status(200).json({
       message: 'Bookings retrieved successfully',
@@ -58,24 +60,52 @@ export const getBookingById = async (req: Request, res: Response) => {
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { serviceId, bookingDate, travelers, specialRequests } = req.body;
-    const userId = (req as any).userId;
-
-    // Get service to calculate price
-    const service = await Service.findById(serviceId);
-    if (!service) {
-      return res.status(404).json({ error: 'Service not found' });
-    }
-
-    const totalPrice = service.price * travelers;
-
-    const booking = new Booking({
-      userId,
+    const {
       serviceId,
+      packageId,
       bookingDate,
       travelers,
       specialRequests,
-      totalPrice,
+      customer,
+      selectedServices = [],
+      destination,
+      tripType,
+      paymentMethod,
+      totalPrice
+    } = req.body;
+    const userId = (req as any).userId;
+
+    let calculatedTotal = Number(totalPrice) || 0;
+
+    if (serviceId) {
+      const service = await Service.findById(serviceId);
+      if (!service) {
+        return res.status(404).json({ error: 'Service not found' });
+      }
+      calculatedTotal = service.price * travelers;
+    }
+
+    if (packageId) {
+      const travelPackage = await Offer.findById(packageId);
+      if (!travelPackage) {
+        return res.status(404).json({ error: 'Package not found' });
+      }
+      calculatedTotal = travelPackage.price * travelers;
+    }
+
+    const booking = new Booking({
+      userId,
+      serviceId: serviceId || null,
+      packageId: packageId || null,
+      bookingDate,
+      travelers,
+      specialRequests,
+      customer,
+      selectedServices,
+      destination,
+      tripType,
+      paymentMethod,
+      totalPrice: calculatedTotal,
       status: 'pending'
     });
 
@@ -83,6 +113,7 @@ export const createBooking = async (req: Request, res: Response) => {
 
     // Populate after save
     await booking.populate('serviceId', 'title price');
+    await booking.populate('packageId', 'title price country duration');
 
     return res.status(201).json({
       message: 'Booking created successfully',
@@ -96,7 +127,7 @@ export const createBooking = async (req: Request, res: Response) => {
 
 export const updateBooking = async (req: Request, res: Response) => {
   try {
-    const { status, bookingDate, travelers, specialRequests } = req.body;
+    const { status, bookingDate, travelers, specialRequests, customer, paymentMethod, notes } = req.body;
 
     let booking = await Booking.findById(req.params.id);
 
@@ -116,6 +147,9 @@ export const updateBooking = async (req: Request, res: Response) => {
     if (status) booking.status = status;
     if (bookingDate) booking.bookingDate = bookingDate;
     if (specialRequests) booking.specialRequests = specialRequests;
+    if (customer) booking.customer = { ...booking.customer, ...customer };
+    if (paymentMethod) booking.paymentMethod = paymentMethod;
+    if (notes) booking.notes = notes;
     booking.updatedAt = new Date();
 
     await booking.save();
@@ -127,6 +161,21 @@ export const updateBooking = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Server error during booking update' });
+  }
+};
+
+export const deleteBooking = async (req: Request, res: Response) => {
+  try {
+    const booking = await Booking.findByIdAndDelete(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    return res.status(200).json({ message: 'Booking deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Server error during booking deletion' });
   }
 };
 

@@ -41,7 +41,40 @@ import visaServiceImg from "../../assets/Visa Assistance.jpg";
 import travelInsuranceImg from "../../assets/Travel Planning.jpg";
 import groupTravelImg from "../../assets/Group Travel.jpg";
 
-const services = [
+export type ServiceItem = {
+  id: number;
+  title: string;
+  description: string;
+  features: string[];
+  image: string;
+  icon: typeof Plane;
+  cta: string;
+};
+
+export const ADMIN_SERVICES_STORAGE_KEY = "rainbowTravelAdminServices";
+
+type StoredServiceItem = Omit<ServiceItem, "icon">;
+
+export function getAdminServices(): ServiceItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedServices = localStorage.getItem(ADMIN_SERVICES_STORAGE_KEY);
+    const parsedServices: StoredServiceItem[] = storedServices ? JSON.parse(storedServices) : [];
+    return parsedServices.map((service) => ({ ...service, icon: Plane }));
+  } catch {
+    return [];
+  }
+}
+
+export function saveAdminServices(nextServices: ServiceItem[]) {
+  const storableServices: StoredServiceItem[] = nextServices.map(({ icon, ...service }) => service);
+  localStorage.setItem(ADMIN_SERVICES_STORAGE_KEY, JSON.stringify(storableServices));
+}
+
+export const services: ServiceItem[] = [
   {
     id: 0,
     title: "Flight Booking",
@@ -136,10 +169,12 @@ const whyChoose = [
 ];
 
 export function OurServices() {
-  const [selectedService, setSelectedService] = useState(services[0]);
+  const [adminServices] = useState<ServiceItem[]>(() => getAdminServices());
+  const allServices = [...adminServices, ...services];
+  const [selectedService, setSelectedService] = useState<ServiceItem>(allServices[0]);
   const detailsRef = useRef<HTMLDivElement>(null);
 
-  const handleCardClick = (service) => {
+  const handleCardClick = (service: ServiceItem) => {
     setSelectedService(service);
     setTimeout(() => {
       detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -189,7 +224,7 @@ export function OurServices() {
               </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 justify-center">
-              {services.map((service, index) => {
+              {allServices.map((service, index) => {
                 const IconComponent = service.icon;
                 return (
                   <motion.div
@@ -346,7 +381,7 @@ export function OurServices() {
             
             <div className="flex justify-center mt-12">
               <motion.div whileHover={{ scale: 1.08 }} transition={{ duration: 0.3 }}>
-                <Link to="/tours">
+                <Link to="/booking">
                   <Button className="wavy-btn rounded-2xl text-white px-16 py-6 text-3xl font-extrabold shadow-2xl hover:shadow-[0_30px_80px_rgba(10,93,122,0.25)] transition-shadow duration-300 border-b-8 border-[#F59E0B] tracking-wide"
                     style={{
                       background: 'linear-gradient(90deg, #0a5d7a, #F59E0B, #1a3a52)',

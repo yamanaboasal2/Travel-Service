@@ -15,12 +15,12 @@ router.get('/user/my-bookings', protect, bookingController.getUserBookings);
 // Get booking by ID
 router.get('/:id', protect, bookingController.getBookingById);
 
-// Create booking (protected)
+// Create booking
 router.post(
   '/',
-  protect,
   [
-    body('serviceId').notEmpty().withMessage('Service ID is required'),
+    body('serviceId').optional().notEmpty().withMessage('Service ID is required'),
+    body('packageId').optional().notEmpty().withMessage('Package ID is required'),
     body('bookingDate').isISO8601().withMessage('Valid booking date is required'),
     body('travelers').isInt({ min: 1 }).withMessage('Travelers must be at least 1')
   ],
@@ -41,6 +41,14 @@ router.patch(
   '/:id/cancel',
   protect,
   bookingController.cancelBooking
+);
+
+// Delete booking (admin only)
+router.delete(
+  '/:id',
+  protect,
+  adminOnly,
+  bookingController.deleteBooking
 );
 
 export default router;

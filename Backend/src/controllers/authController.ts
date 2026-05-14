@@ -69,11 +69,18 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (user.status === 'blocked') {
+      return res.status(403).json({ error: 'This account is blocked' });
+    }
+
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    user.lastLoginAt = new Date();
+    await user.save();
 
     const token = generateToken(user._id.toString(), user.role);
 
@@ -84,7 +91,8 @@ export const login = async (req: Request, res: Response) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        status: user.status
       }
     });
   } catch (error) {

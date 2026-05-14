@@ -5,33 +5,35 @@ import avatar2 from '../../assets/h1-avatar-2.jpg';
 import avatar3 from '../../assets/h1-avatar-3.jpg';
 import avatar4 from '../../assets/h1-avatar-4.jpg';
 import pg02 from '../../assets/h1-bg02.jpg';
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function StatsCarousel() {
+  const { t } = useLanguage();
   const stats = [
     {
       value: "10+",
-      label: "Years Experience",
+      label: t("yearsExperience"),
       icon: Sparkles,
       accent: "from-orange-500/80 to-amber-400/60",
       delay: 0.1,
     },
     {
       value: "5000+",
-      label: "Happy Travelers",
+      label: t("happyTravelers"),
       icon: BadgeCheck,
       accent: "from-teal-600/80 to-cyan-400/50",
       delay: 0.2,
     },
     {
       value: "50+",
-      label: "Destinations",
+      label: t("destinations"),
       icon: Globe2,
       accent: "from-slate-900/80 to-slate-700/60",
       delay: 0.3,
     },
     {
       value: "24/7",
-      label: "Customer Support",
+      label: t("customerSupport"),
       icon: Headset,
       accent: "from-amber-500/80 to-orange-500/60",
       delay: 0.4,
@@ -39,7 +41,7 @@ export default function StatsCarousel() {
   ];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden py-24 px-6 lg:px-16">
+    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden py-24 px-6 lg:px-16" dir="ltr">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -132,7 +134,7 @@ export default function StatsCarousel() {
                 </div>
               </div>
               <div className="text-sm font-semibold tracking-wide text-white/95">
-                50+ People Joined
+                {t("peopleJoined")}
               </div>
             </div>
 
@@ -144,7 +146,7 @@ export default function StatsCarousel() {
               transition={{ duration: 0.8, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              Travel stats that feel alive.
+              {t("travelStatsTitle")}
             </motion.h2>
 
             <motion.p
@@ -154,7 +156,7 @@ export default function StatsCarousel() {
               transition={{ duration: 0.8, delay: 0.18 }}
               viewport={{ once: true }}
             >
-              Explore premium travel experiences with a glass-style showcase that blends motion, depth, and soft fade effects over the background.
+              {t("travelStatsDesc")}
             </motion.p>
 
             <motion.button
@@ -166,7 +168,7 @@ export default function StatsCarousel() {
               transition={{ duration: 0.8, delay: 0.24 }}
               viewport={{ once: true }}
             >
-              About Us
+              {t("aboutUs")}
               <ArrowRight className="h-4 w-4" />
             </motion.button>
           </motion.div>

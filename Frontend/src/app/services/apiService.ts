@@ -170,6 +170,8 @@ export interface Service {
   price: number;
   image?: string;
   duration?: string;
+  features?: string[];
+  color?: string;
 }
 
 export async function getAllServices() {
@@ -191,6 +193,28 @@ export async function getServiceById(id: string) {
   return response.data;
 }
 
+export async function createService(payload: Partial<Service>) {
+  const response = await apiRequest<{ data: Service; message: string }>('/services', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function updateService(id: string, payload: Partial<Service>) {
+  const response = await apiRequest<{ data: Service; message: string }>(`/services/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteService(id: string) {
+  return apiRequest<{ message: string }>(`/services/${id}`, { method: 'DELETE' });
+}
+
 // ============ OFFERS ENDPOINTS ============
 
 export interface Offer {
@@ -198,9 +222,18 @@ export interface Offer {
   title: string;
   description: string;
   discount: number;
+  price?: number;
+  originalPrice?: number;
+  country?: string;
+  duration?: string;
+  rating?: number;
   image?: string;
+  video?: string;
+  mediaType?: 'image' | 'video';
+  includes?: string[];
+  highlights?: string[];
   serviceId?: string;
-  expiryDate: string;
+  expiryDate?: string;
 }
 
 export async function getAllOffers() {
@@ -222,18 +255,108 @@ export async function getOfferById(id: string) {
   return response.data;
 }
 
+export async function createOffer(payload: Partial<Offer>) {
+  const response = await apiRequest<{ data: Offer; message: string }>('/offers', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function updateOffer(id: string, payload: Partial<Offer>) {
+  const response = await apiRequest<{ data: Offer; message: string }>(`/offers/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteOffer(id: string) {
+  return apiRequest<{ message: string }>(`/offers/${id}`, { method: 'DELETE' });
+}
+
+// ============ DESTINATIONS ENDPOINTS ============
+
+export interface Destination {
+  _id: string;
+  name: string;
+  country: string;
+  description: string;
+  image?: string;
+  price?: number;
+  rating?: number;
+  duration?: string;
+  highlights?: string[];
+}
+
+export async function getAllDestinations() {
+  const response = await apiRequest<{
+    data: Destination[];
+    count: number;
+    message: string;
+  }>('/destinations', { method: 'GET' });
+
+  return response.data || [];
+}
+
+export async function createDestination(payload: Partial<Destination>) {
+  const response = await apiRequest<{ data: Destination; message: string }>('/destinations', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function updateDestination(id: string, payload: Partial<Destination>) {
+  const response = await apiRequest<{ data: Destination; message: string }>(`/destinations/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteDestination(id: string) {
+  return apiRequest<{ message: string }>(`/destinations/${id}`, { method: 'DELETE' });
+}
+
 // ============ BOOKINGS ENDPOINTS ============
 
 export interface Booking {
   _id: string;
-  userId: string;
-  serviceId: string;
+  userId?: string;
+  serviceId?: string;
+  packageId?: string;
+  customer?: { name?: string; email?: string; phone?: string; nationality?: string; passportType?: string };
+  selectedServices?: string[];
+  destination?: string;
+  tripType?: string;
+  paymentMethod?: string;
+  notes?: string;
   bookingDate: string;
   travelers: number;
   totalPrice: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   specialRequests?: string;
   createdAt: string;
+}
+
+export interface BookingPayload {
+  serviceId?: string;
+  packageId?: string;
+  bookingDate: string;
+  travelers: number;
+  specialRequests?: string;
+  customer?: Booking['customer'];
+  selectedServices?: string[];
+  destination?: string;
+  tripType?: string;
+  paymentMethod?: string;
+  totalPrice?: number;
+  notes?: string;
 }
 
 export async function getAllBookings() {
@@ -287,6 +410,34 @@ export async function createBooking(
   return response.data;
 }
 
+export async function createBookingRequest(payload: BookingPayload) {
+  const response = await apiRequest<{
+    data: Booking;
+    message: string;
+  }>('/bookings', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function updateBooking(id: string, payload: Partial<Booking>) {
+  const response = await apiRequest<{
+    data: Booking;
+    message: string;
+  }>(`/bookings/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteBooking(id: string) {
+  return apiRequest<{ message: string }>(`/bookings/${id}`, { method: 'DELETE' });
+}
+
 export async function cancelBooking(id: string) {
   const response = await apiRequest<{
     data: Booking;
@@ -333,6 +484,83 @@ export async function getAllMessages() {
   }>('/contact', { method: 'GET' });
 
   return response.data || [];
+}
+
+export async function deleteContactMessage(id: string) {
+  return apiRequest<{ message: string }>(`/contact/${id}`, { method: 'DELETE' });
+}
+
+export async function updateContactMessageStatus(id: string, status: ContactMessage['status']) {
+  const response = await apiRequest<{
+    data: ContactMessage;
+    message: string;
+  }>(`/contact/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+
+  return response.data;
+}
+
+// ============ COMMENTS ENDPOINTS ============
+
+export interface CustomerComment {
+  _id: string;
+  name: string;
+  city: string;
+  phone?: string;
+  comment: string;
+  status: 'pending' | 'approved' | 'hidden';
+  color?: string;
+  createdAt: string;
+}
+
+export async function getAllComments() {
+  const response = await apiRequest<{
+    data: CustomerComment[];
+    count: number;
+    message: string;
+  }>('/comments', { method: 'GET' });
+
+  return response.data || [];
+}
+
+export async function getAdminComments() {
+  const response = await apiRequest<{
+    data: CustomerComment[];
+    count: number;
+    message: string;
+  }>('/comments/admin/all', { method: 'GET' });
+
+  return response.data || [];
+}
+
+export async function createComment(payload: Pick<CustomerComment, 'name' | 'city' | 'comment'> & { phone?: string }) {
+  const response = await apiRequest<{
+    data: CustomerComment;
+    message: string;
+  }>('/comments', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function updateComment(id: string, payload: Partial<CustomerComment>) {
+  const response = await apiRequest<{
+    data: CustomerComment;
+    message: string;
+  }>(`/comments/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteComment(id: string) {
+  return apiRequest<{ message: string }>(`/comments/${id}`, { method: 'DELETE' });
 }
 
 // ============ UTILITY FUNCTIONS ============

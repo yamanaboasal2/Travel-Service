@@ -5,8 +5,11 @@ import CompanyOverview from "../components/CompanyOverview";
 import DestinationCarousel from "../components/DestinationCarousel";
 import StatsCarousel from "../components/StatsCarousel";
 import ServicesShowcase from "../components/ServicesShowcase";
+import { ParallaxShowcase } from "../components/ParallaxShowcase";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, MapPin, BadgeCheck } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useLanguage } from "../contexts/LanguageContext";
 
 import banner7 from "@/assets/h1-banner7.png";
 import deco4 from "@/assets/h1-deco4.svg";
@@ -14,8 +17,27 @@ import deco5 from "@/assets/h1-deco5.svg";
 import deco6 from "@/assets/h1-deco6.svg";
 
 export function Home() {
+  const { t } = useLanguage();
+  const travelSteps = [
+    {
+      icon: MapPin,
+      title: t("chooseDestination"),
+      text: t("chooseDestinationDesc"),
+    },
+    {
+      icon: BadgeCheck,
+      title: t("checkAvailability"),
+      text: t("checkAvailabilityDesc"),
+    },
+    {
+      icon: CheckCircle2,
+      title: t("letsGo"),
+      text: t("letsGoDesc"),
+    },
+  ];
+
   return (
-    <div className="relative isolate min-h-screen overflow-hidden">
+    <div className="relative isolate min-h-screen overflow-hidden" dir="ltr">
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
         style={{
@@ -42,12 +64,12 @@ export function Home() {
               <img
                 src={banner7}
                 alt="Travel collage"
-                className="w-full max-w-[700px] select-none object-contain"
+                className="ml-0 mr-auto w-full max-w-[700px] select-none object-contain"
               />
             </motion.div>
 
             <motion.div
-              className="relative pl-0 lg:pl-8"
+              className="relative lg:pl-8"
               initial={{ opacity: 0, x: 34 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9 }}
@@ -65,16 +87,16 @@ export function Home() {
                 className="mb-4 text-[15px] font-medium italic tracking-wide text-orange-500"
                 style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               >
-                Let&apos;s Go Together
+                {t("letsGoTogether")}
               </p>
 
               <h2
                 className="max-w-xl text-5xl font-black leading-[1.02] text-slate-900 lg:text-6xl"
                 style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               >
-                Bringing Your Travel
+                {t("bringingTravel")}
                 <br />
-                Dreams To Life
+                {t("dreamsToLife")}
               </h2>
 
               <motion.img
@@ -86,27 +108,11 @@ export function Home() {
               />
 
               <p className="mt-8 max-w-xl text-sm leading-7 text-slate-500 md:text-[15px]">
-                Journey with us on fully customized itineraries through diverse waters — where private waves break, islands invite exploration, and biodiverse lands awaken your inner explorer.
+                {t("journeyDesc")}
               </p>
 
               <div className="mt-10 space-y-7">
-                {[
-                  {
-                    icon: MapPin,
-                    title: "Choose Destination",
-                    text: "With nearly half a million attractions, hotels & more, you’re sure to find joy.",
-                  },
-                  {
-                    icon: BadgeCheck,
-                    title: "Check Availability",
-                    text: "With nearly half a million attractions, hotels & more, you’re sure to find joy.",
-                  },
-                  {
-                    icon: CheckCircle2,
-                    title: "Let’s Go",
-                    text: "With nearly half a million attractions, hotels & more, you’re sure to find joy.",
-                  },
-                ].map((item, index) => {
+                {travelSteps.map((item, index) => {
                   const Icon = item.icon;
 
                   return (
@@ -133,10 +139,10 @@ export function Home() {
               </div>
 
               <div className="mt-10 flex items-center gap-4">
-                <button className="inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 hover:scale-[1.02]">
-                  Contact Us
+                <Link to="/contact" className="inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 hover:scale-[1.02]">
+                  {t("contactUs")}
                   <ArrowRight className="h-4 w-4" />
-                </button>
+                </Link>
                 <motion.img
                   src={deco6}
                   alt="decorative plane path"
@@ -150,6 +156,7 @@ export function Home() {
         </section>
         <Marquee />
         <ServicesShowcase />
+        <ParallaxShowcase />
       </div>
     </div>
   );

@@ -35,16 +35,7 @@ export const getOfferById = async (req: Request, res: Response) => {
 
 export const createOffer = async (req: Request, res: Response) => {
   try {
-    const { title, description, discount, image, serviceId, expiryDate } = req.body;
-
-    const offer = new Offer({
-      title,
-      description,
-      discount,
-      image,
-      serviceId,
-      expiryDate
-    });
+    const offer = new Offer(req.body);
 
     await offer.save();
 
@@ -60,22 +51,15 @@ export const createOffer = async (req: Request, res: Response) => {
 
 export const updateOffer = async (req: Request, res: Response) => {
   try {
-    const { title, description, discount, image, serviceId, expiryDate } = req.body;
-
-    let offer = await Offer.findById(req.params.id);
+    const offer = await Offer.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
 
     if (!offer) {
       return res.status(404).json({ error: 'Offer not found' });
     }
-
-    if (title) offer.title = title;
-    if (description) offer.description = description;
-    if (discount) offer.discount = discount;
-    if (image) offer.image = image;
-    if (serviceId) offer.serviceId = serviceId;
-    if (expiryDate) offer.expiryDate = expiryDate;
-
-    await offer.save();
 
     return res.status(200).json({
       message: 'Offer updated successfully',

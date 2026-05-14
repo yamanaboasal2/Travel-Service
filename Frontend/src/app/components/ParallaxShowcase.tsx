@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Parallax, ParallaxLayer } from "@react-spring/parallax";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import heroBg from "../../assets/h1-bg01.jpg";
 import paralax1 from "../../assets/paralax1.jpg";
 import paralax2 from "../../assets/paralax2.jpg";
@@ -12,215 +13,205 @@ import paralax8 from "../../assets/paralax8.jpg";
 import paralax9 from "../../assets/paralax9.jpg";
 import paralax10 from "../../assets/paralax10.jpg";
 
-/**
- * ParallaxShowcase Component
- * 
- * An interactive 3D parallax section with 10 stacked images that can be dragged
- * left/right for a dynamic 3D card effect with parallax scrolling animation.
- * 
- * Features:
- * - 10 images stacked in 3D effect (stacked overlapping cards)
- * - 5 images on left side, 5 on right side
- * - Draggable images with smooth 3D transitions
- * - Parallax scrolling with layered depth
- * - Responsive design with Tailwind CSS
- * - Smooth scroll animations with mouse drag
- */
-
-// Parallax images data (10 images for stacked 3D carousel effect)
 const imageList = [
-  { id: 1, src: paralax1 },
-  { id: 2, src: paralax2 },
-  { id: 3, src: paralax3 },
-  { id: 4, src: paralax4 },
-  { id: 5, src: paralax5 },
-  { id: 6, src: parlax6 },
-  { id: 7, src: paralax7 },
-  { id: 8, src: paralax8 },
-  { id: 9, src: paralax9 },
-  { id: 10, src: paralax10 },
+  { id: 1, src: paralax1, label: "Coastal escape" },
+  { id: 2, src: paralax2, label: "Mountain road" },
+  { id: 3, src: paralax3, label: "City break" },
+  { id: 4, src: paralax4, label: "Golden sunset" },
+  { id: 5, src: paralax5, label: "Island view" },
+  { id: 6, src: parlax6, label: "Hidden trail" },
+  { id: 7, src: paralax7, label: "Blue water" },
+  { id: 8, src: paralax8, label: "Travel moment" },
+  { id: 9, src: paralax9, label: "Open horizon" },
+  { id: 10, src: paralax10, label: "Dream route" },
 ];
 
+type GalleryImage = (typeof imageList)[number];
+
 export function ParallaxShowcase() {
-  const [dragX, setDragX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [cards, setCards] = useState<GalleryImage[]>(imageList);
+  const [exitDirection, setExitDirection] = useState(1);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
+  const visibleCards = useMemo(() => cards.slice(0, 6), [cards]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartX(e.clientX);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["-12%", "12%"]);
+  const titleY = useTransform(scrollYProgress, [0, 1], ["24px", "-24px"]);
+  const deckY = useTransform(scrollYProgress, [0, 1], ["46px", "-34px"]);
+
+  useEffect(() => {
+    if (cards.length !== 0) return;
+
+    setIsResetting(true);
+    const timer = window.setTimeout(() => {
+      setCards(imageList);
+      setIsResetting(false);
+    }, 760);
+
+    return () => window.clearTimeout(timer);
+  }, [cards.length]);
+
+  useEffect(() => {
+    const updateViewport = () => setIsCompact(window.innerWidth < 640);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  const dismissTopCard = (direction: number) => {
+    setExitDirection(direction);
+    setCards((current) => current.slice(1));
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    const newX = e.clientX - startX;
-    setDragX(newX);
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    
-    const threshold = 100;
-    
-    if (dragX > threshold) {
-      setCurrentIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
-    } else if (dragX < -threshold) {
-      setCurrentIndex((prev) => (prev < imageList.length - 1 ? prev + 1 : 0));
-    }
-    
-    setDragX(0);
-  };
+  const stackX = isCompact ? 8 : 18;
+  const stackY = isCompact ? 10 : 14;
+  const cardScaleStep = isCompact ? 0.035 : 0.045;
+  const dismissDistance = isCompact ? 78 : 115;
+  const dismissVelocity = isCompact ? 520 : 720;
+  const exitX = isCompact ? 520 : 900;
 
   return (
-    <div className="relative w-full">
-      {/* Parallax Container */}
-      <Parallax pages={3} style={{ top: "0", left: "0", height: "100%" }}>
-        {/* Layer 0: Background Image with overlay */}
-        <ParallaxLayer
-          offset={0}
-          speed={-0.3}
-          style={{
-            backgroundImage: `url(${heroBg})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundAttachment: "fixed",
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-[#000816]/55 via-[#021427]/35 to-[#0a5d7a]/25" />
-        </ParallaxLayer>
+    <section ref={sectionRef} className="relative isolate overflow-hidden bg-[#021427] py-16 text-white sm:py-20 md:py-28 lg:py-32" dir="ltr">
+      <motion.div
+        className="absolute inset-[-10%] bg-cover bg-center"
+        style={{ backgroundImage: `url(${heroBg})`, y: backgroundY }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#021427]/92 via-[#073947]/78 to-[#0a5d7a]/70" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_24%,rgba(245,158,11,0.23),transparent_30%),radial-gradient(circle_at_84%_20%,rgba(126,224,255,0.19),transparent_32%)]" />
+      <div className="absolute left-0 right-0 top-16 h-px bg-gradient-to-r from-transparent via-[#F59E0B]/80 to-transparent" />
+      <div className="absolute left-0 right-0 bottom-16 h-px bg-gradient-to-r from-transparent via-[#7ee0ff]/60 to-transparent" />
 
-        {/* Layer 1: Subtle spacer */}
-        <ParallaxLayer offset={0} speed={0.1}>
-          <div className="h-screen" />
-        </ParallaxLayer>
-
-        {/* Layer 2: Empty spacer */}
-        <ParallaxLayer offset={1} speed={0.2}>
-          <div className="h-screen" />
-        </ParallaxLayer>
-      </Parallax>
-
-      {/* Stacked Carousel - Outside Parallax */}
-      <div className="relative w-full overflow-hidden py-20 md:py-24">
-        <div className="absolute inset-0 bg-transparent" />
-        <div className="absolute left-0 right-0 top-16 h-px bg-gradient-to-r from-transparent via-[#F59E0B]/80 to-transparent" />
-        <div className="absolute left-0 right-0 bottom-16 h-px bg-gradient-to-r from-transparent via-[#0a5d7a]/70 to-transparent" />
-
-        <div className="relative flex flex-col justify-center items-center px-4">
-          <div className="mb-12 max-w-3xl text-center">
-            <p className="text-xs md:text-sm uppercase tracking-[0.5em] text-white/65 mb-4 font-semibold">
-              Travel Gallery
-            </p>
-            <h2
-              className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-white via-[#F59E0B] to-[#7ee0ff] bg-clip-text text-transparent drop-shadow-[0_8px_20px_rgba(0,0,0,0.35)]"
-              style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
-            >
-              Swipe Into the Journey
-            </h2>
-            <p className="text-lg md:text-xl text-white/82 leading-relaxed max-w-2xl mx-auto">
-              Drag to flip through photos. They fly off-screen and snap back with style.
-            </p>
-          </div>
-
-          <div
-            className="relative"
-            style={{ width: "288px", height: "384px", perspective: "1400px" }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+      <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 sm:gap-12 sm:px-6 lg:grid-cols-[0.86fr_1.14fr] lg:gap-14 lg:px-10">
+        <motion.div style={{ y: titleY }} className="text-center lg:text-left">
+          <p className="mb-3 text-[10px] font-black uppercase tracking-[0.34em] text-white/60 sm:mb-4 sm:text-xs sm:tracking-[0.55em]">
+            Travel Gallery
+          </p>
+          <h2
+            className="text-[clamp(2.55rem,13vw,4rem)] font-black leading-[1.02] sm:text-5xl md:text-6xl lg:text-7xl"
+            style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
           >
-            {/* Stacked images - all centered */}
-            {imageList.map((img, idx) => {
-              const positionOffset = idx - currentIndex;
-              const isVisible = Math.abs(positionOffset) <= 2;
-              const isActive = positionOffset === 0;
-              const dragRatio = isDragging ? Math.min(Math.abs(dragX) / 140, 1.2) : 0;
-              const dragDirection = dragX > 0 ? 1 : -1;
-              const offscreenX = isDragging && isActive ? dragX * 3.2 : 0;
-              const verticalShift = isDragging && isActive ? -Math.abs(dragX) * 0.035 : 0;
-
-              return (
-                <div
-                  key={img.id}
-                  className="absolute inset-0 rounded-[1.75rem] overflow-hidden cursor-grab active:cursor-grabbing"
-                  style={{
-                    transform: `
-                      translate3d(${offscreenX}px, ${positionOffset * -14 + verticalShift}px, ${isDragging && isActive ? Math.abs(dragX) * 0.8 : 0}px)
-                      rotateY(${isDragging && isActive ? dragX * 0.09 : positionOffset * -6}deg)
-                      rotateZ(${positionOffset * 0.8}deg)
-                      scale(${1 - Math.abs(positionOffset) * 0.07})
-                    `,
-                    zIndex: imageList.length - Math.abs(positionOffset),
-                    opacity: isVisible ? 1 : 0,
-                    pointerEvents: positionOffset === 0 ? "auto" : "none",
-                    transition: isDragging
-                      ? "none"
-                      : "transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, filter 0.35s ease",
-                    filter: `
-                      brightness(${1 - Math.abs(positionOffset) * 0.11})
-                      saturate(${1 - Math.abs(positionOffset) * 0.08})
-                      contrast(${1 + Math.abs(positionOffset) * 0.03})
-                    `,
-                    transformStyle: "preserve-3d" as any,
-                    boxShadow: isDragging
-                      ? "0 34px 85px rgba(0,0,0,0.45)"
-                      : "0 20px 60px rgba(0,0,0,0.30)",
-                  }}
-                >
-                  <img
-                    src={img.src}
-                    alt={`Parallax ${img.id}`}
-                    className="w-full h-full object-cover"
-                    draggable={false}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/18 via-transparent to-white/8" />
-                </div>
-              );
-            })}
+            Swipe Into
+            <span className="block bg-gradient-to-r from-[#F59E0B] via-[#ffd08a] to-[#7ee0ff] bg-clip-text text-transparent">
+              the Journey
+            </span>
+          </h2>
+          <p className="mx-auto mt-5 max-w-[32rem] text-sm font-semibold leading-7 text-white/76 sm:text-base md:text-lg lg:mx-0">
+            Drag the front photo to the right or left. It leaves the screen, the next memory steps forward, and the full stack returns when the gallery is done.
+          </p>
+          <div className="mt-6 inline-flex rounded-full border border-white/18 bg-white/10 px-4 py-2 text-xs font-black text-white/80 backdrop-blur-md sm:mt-8 sm:px-5 sm:text-sm">
+            {cards.length ? `${imageList.length - cards.length + 1} / ${imageList.length}` : "Resetting gallery"}
           </div>
+        </motion.div>
 
-          {/* Image counter */}
-          <div className="mt-8 rounded-full border border-white/20 bg-white/8 px-5 py-2 text-white/85 backdrop-blur-md">
-            <p className="text-base md:text-lg font-semibold tracking-[0.18em]">
-              {currentIndex + 1} / {imageList.length}
-            </p>
+        <motion.div style={{ y: deckY }} className="relative mx-auto h-[min(112vw,410px)] w-[min(82vw,320px)] sm:h-[440px] sm:w-full sm:max-w-[420px] md:h-[520px] md:max-w-[500px]">
+          <div className="absolute inset-0 rounded-[1.55rem] bg-white/8 blur-2xl sm:rounded-[2rem]" />
+          <div className="absolute inset-x-5 bottom-2 h-16 rounded-full bg-black/35 blur-3xl sm:inset-x-8 sm:h-20" />
+
+          <div className="relative h-full w-full" style={{ perspective: 1500 }}>
+            <AnimatePresence custom={exitDirection} mode="popLayout">
+              {visibleCards.map((card, index) => {
+                const isTop = index === 0;
+                const stackOffset = index;
+
+                return (
+                  <motion.div
+                    key={card.id}
+                    custom={exitDirection}
+                    className="absolute inset-0 select-none overflow-hidden rounded-[1.55rem] border border-white/18 bg-white/10 shadow-[0_30px_85px_rgba(0,0,0,0.42)] backdrop-blur-sm sm:rounded-[2rem]"
+                    drag={isTop ? "x" : false}
+                    dragElastic={0.68}
+                    dragMomentum={false}
+                    onDragEnd={(_, info) => {
+                      const distance = info.offset.x;
+                      const velocity = info.velocity.x;
+                      if (Math.abs(distance) > dismissDistance || Math.abs(velocity) > dismissVelocity) {
+                        dismissTopCard(distance >= 0 || velocity >= 0 ? 1 : -1);
+                      }
+                    }}
+                    initial={{
+                      x: stackOffset * stackX,
+                      y: stackOffset * stackY,
+                      rotateZ: stackOffset * (isCompact ? -1.8 : -2.6),
+                      rotateY: stackOffset * (isCompact ? -2.5 : -4),
+                      scale: 1 - stackOffset * cardScaleStep,
+                      opacity: stackOffset < 5 ? 1 : 0,
+                    }}
+                    animate={{
+                      x: stackOffset * stackX,
+                      y: stackOffset * stackY,
+                      rotateZ: stackOffset * (isCompact ? -1.8 : -2.6),
+                      rotateY: stackOffset * (isCompact ? -2.5 : -4),
+                      scale: 1 - stackOffset * cardScaleStep,
+                      opacity: stackOffset < 5 ? 1 : 0,
+                      filter: `brightness(${1 - stackOffset * 0.08}) saturate(${1 - stackOffset * 0.05})`,
+                    }}
+                    exit={(direction: number) => ({
+                      x: direction * exitX,
+                      y: isCompact ? -42 : -70,
+                      rotateZ: direction * (isCompact ? 16 : 22),
+                      rotateY: direction * (isCompact ? 22 : 34),
+                      scale: 0.96,
+                      opacity: 0,
+                      transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
+                    })}
+                    transition={{
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 28,
+                    }}
+                    whileDrag={{
+                      scale: 1.025,
+                      rotateZ: 0,
+                      boxShadow: "0 44px 110px rgba(0,0,0,0.54)",
+                    }}
+                    style={{
+                      zIndex: imageList.length - index,
+                      cursor: isTop ? "grab" : "default",
+                      pointerEvents: isTop ? "auto" : "none",
+                      touchAction: "pan-y",
+                      transformStyle: "preserve-3d",
+                    }}
+                  >
+                    <img src={card.src} alt={card.label} className="h-full w-full object-cover" draggable={false} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#021427]/58 via-transparent to-white/10" />
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 sm:bottom-5 sm:left-5 sm:right-5 sm:gap-4">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/58 sm:text-xs sm:tracking-[0.28em]">
+                          Rainbow Travel
+                        </p>
+                        <p className="mt-1 text-xl font-black text-white drop-shadow-lg sm:mt-2 sm:text-2xl">
+                          {card.label}
+                        </p>
+                      </div>
+                      {isTop && (
+                        <span className="rounded-full bg-white/18 px-3 py-1.5 text-[10px] font-black text-white/85 backdrop-blur-md sm:px-4 sm:py-2 sm:text-xs">
+                          Drag
+                        </span>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            {isResetting && (
+              <motion.div
+                className="absolute inset-0 flex items-center justify-center rounded-[1.55rem] border border-white/18 bg-white/10 px-4 text-center text-xs font-black uppercase tracking-[0.2em] text-white/75 backdrop-blur-md sm:rounded-[2rem] sm:text-sm sm:tracking-[0.28em]"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                Rebuilding stack
+              </motion.div>
+            )}
           </div>
-        </div>
+        </motion.div>
       </div>
-
-      {/* CSS Animations */}
-      <style>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-
-        /* Parallax responsive adjustments */
-        @media (max-width: 768px) {
-          .parallax-layer {
-            padding: 0 1rem;
-          }
-        }
-      `}</style>
-    </div>
+    </section>
   );
 }

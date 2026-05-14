@@ -41,7 +41,45 @@ import dubaiVideo from "../../assets/Dubai Luxury Experience.mp4";
 import cairoVideo from "../../assets/Cairo & Pyramids Explorer.mp4";
 import maldivesVideo from "../../assets/Maldives Paradise Retreat.mp4";
 
-const offers = [
+export type OfferPackage = {
+  id: number;
+  title: string;
+  destination: string;
+  duration: string;
+  price: string;
+  rating: number;
+  reviews: number;
+  description: string;
+  includes: string[];
+  highlights: string[];
+  video: string;
+  mediaType?: "image" | "video";
+  bestFor: string;
+  badge: string;
+  discount?: number;
+  originalPrice?: string;
+};
+
+export const ADMIN_PACKAGES_STORAGE_KEY = "rainbowTravelAdminPackages";
+
+export function getAdminOfferPackages(): OfferPackage[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedPackages = localStorage.getItem(ADMIN_PACKAGES_STORAGE_KEY);
+    return storedPackages ? JSON.parse(storedPackages) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveAdminOfferPackages(packages: OfferPackage[]) {
+  localStorage.setItem(ADMIN_PACKAGES_STORAGE_KEY, JSON.stringify(packages));
+}
+
+export const offers: OfferPackage[] = [
   {
     id: 0,
     title: "Istanbul Package",
@@ -67,7 +105,9 @@ const offers = [
     ],
     video: istanbulVideo,
     bestFor: "Culture Lovers",
-    badge: "Popular"
+    badge: "Popular",
+    discount: 15,
+    originalPrice: "$880"
   },
   {
     id: 1,
@@ -121,7 +161,9 @@ const offers = [
     ],
     video: sharmVideo,
     bestFor: "Luxury Seekers",
-    badge: "Best Rated"
+    badge: "Best Rated",
+    discount: 25,
+    originalPrice: "$1,200"
   },
   {
     id: 3,
@@ -148,7 +190,9 @@ const offers = [
     ],
     video: dubaiVideo,
     bestFor: "Modern Luxury",
-    badge: "Premium"
+    badge: "Premium",
+    discount: 10,
+    originalPrice: "$1,335"
   },
   {
     id: 4,
@@ -202,15 +246,19 @@ const offers = [
     ],
     video: maldivesVideo,
     bestFor: "Honeymooners",
-    badge: "Paradise"
+    badge: "Paradise",
+    discount: 55,
+    originalPrice: "$3,335"
   },
 ];
 
 export function Offers() {
-  const [selectedOffer, setSelectedOffer] = useState(offers[0]);
+  const [adminPackages] = useState<OfferPackage[]>(() => getAdminOfferPackages());
+  const allOffers = [...adminPackages, ...offers];
+  const [selectedOffer, setSelectedOffer] = useState<OfferPackage>(allOffers[0]);
   const detailsRef = useRef<HTMLDivElement>(null);
 
-  const handleOfferClick = (offer) => {
+  const handleOfferClick = (offer: OfferPackage) => {
     setSelectedOffer(offer);
     setTimeout(() => {
       detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -252,7 +300,7 @@ export function Offers() {
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-12 text-center">
               <h2 className="text-4xl md:text-5xl font-black text-[#0a5d7a] mb-3" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-                {offers.length} Amazing Packages Available
+                {allOffers.length} Amazing Packages Available
               </h2>
               <div className="h-1 w-24 bg-gradient-to-r from-[#0a5d7a] via-[#F59E0B] to-[#0a5d7a] rounded-full mx-auto mb-4" />
               <p className="text-lg text-[#1a3a52]" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
@@ -260,7 +308,7 @@ export function Offers() {
               </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 justify-center">
-              {offers.map((offer, index) => {
+              {allOffers.map((offer, index) => {
                 return (
                   <motion.div
                     key={offer.id}
@@ -275,13 +323,21 @@ export function Offers() {
                     <Card className={`overflow-hidden rounded-3xl border-2 border-white/80 bg-white/70 shadow-2xl backdrop-blur-xl flex flex-col p-0 transition-all duration-300 h-full group-hover:border-[#F59E0B]/80 ${selectedOffer.id === offer.id ? 'ring-4 ring-[#F59E0B] shadow-[0_0_40px_rgba(245,158,11,0.4)]' : ''}`}>
                       {/* Video Container */}
                       <div className="relative w-full h-96 overflow-hidden bg-black/20">
-                        <video
-                          src={`${offer.video}?t=${Date.now()}`}
-                          className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          autoPlay
-                          muted
-                          loop
-                        />
+                        {offer.mediaType === "image" ? (
+                          <img
+                            src={offer.video}
+                            alt={offer.title}
+                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <video
+                            src={offer.video.startsWith("data:") ? offer.video : `${offer.video}?t=${Date.now()}`}
+                            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            autoPlay
+                            muted
+                            loop
+                          />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#0a5d7a]/20 to-transparent" />
                         
                         {/* Badge */}
@@ -291,6 +347,15 @@ export function Offers() {
                         >
                           {offer.badge}
                         </motion.div>
+
+                        {offer.discount && (
+                          <motion.div
+                            whileHover={{ scale: 1.08 }}
+                            className="absolute left-4 top-16 rounded-full bg-white/95 px-4 py-2 text-sm font-black text-[#F46C28] shadow-lg backdrop-blur-sm"
+                          >
+                            {offer.discount}% OFF
+                          </motion.div>
+                        )}
 
                         {/* Rating */}
                         <div className="absolute top-4 right-4 bg-white/90 text-[#0a5d7a] px-3 py-1 rounded-full flex items-center gap-1 shadow-lg backdrop-blur-sm">
@@ -303,7 +368,10 @@ export function Offers() {
                           whileHover={{ scale: 1.05 }}
                           className="absolute bottom-4 left-4 bg-gradient-to-r from-[#0a5d7a] to-[#1a3a52] text-white px-4 py-2 rounded-xl font-black text-lg shadow-lg"
                         >
-                          {offer.price}
+                          <div className="flex items-end gap-2">
+                            {offer.originalPrice && <span className="text-sm text-white/65 line-through">{offer.originalPrice}</span>}
+                            <span>{offer.price}</span>
+                          </div>
                         </motion.div>
                       </div>
 
@@ -361,7 +429,9 @@ export function Offers() {
                   whileHover={{ scale: 1.1 }}
                   className="text-right flex-shrink-0 bg-gradient-to-br from-[#F59E0B]/20 to-[#0a5d7a]/20 px-4 py-3 rounded-xl"
                 >
+                  {selectedOffer.originalPrice && <p className="text-sm font-bold text-[#1a3a52]/55 line-through">{selectedOffer.originalPrice}</p>}
                   <p className="text-3xl font-black text-[#F59E0B]">{selectedOffer.price}</p>
+                  {selectedOffer.discount && <p className="text-xs font-black text-[#F46C28]">{selectedOffer.discount}% OFF</p>}
                   <p className="text-xs text-[#1a3a52] font-bold">LIMITED TIME OFFER</p>
                 </motion.div>
               </div>
@@ -461,9 +531,11 @@ export function Offers() {
                 whileTap={{ scale: 0.98 }}
                 className="flex-1"
               >
-                <Button className="w-full rounded-xl text-[#0a5d7a] px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-[#0a5d7a] bg-white/60 backdrop-blur-sm uppercase tracking-wide hover:bg-white/80">
-                  Ask Questions
-                </Button>
+                <Link to="/contact" className="block w-full">
+                  <Button className="w-full rounded-xl text-[#0a5d7a] px-8 py-3 text-base font-bold shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-[#0a5d7a] bg-white/60 backdrop-blur-sm uppercase tracking-wide hover:bg-white/80">
+                    Ask Questions
+                  </Button>
+                </Link>
               </motion.div>
             </div>
           </motion.div>

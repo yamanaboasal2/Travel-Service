@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function CompanyOverview() {
+  const { t } = useLanguage();
+
   return (
-    <section className="relative w-full bg-gradient-to-br from-gray-50 via-white to-gray-100 py-16 px-8 lg:px-16 overflow-hidden">
+    <section className="relative w-full bg-gradient-to-br from-gray-50 via-white to-gray-100 py-16 px-8 lg:px-16 overflow-hidden" dir="ltr">
       {/* Decorative elements */}
       <motion.div
         className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-orange-200 to-transparent opacity-20"
@@ -52,7 +55,7 @@ export default function CompanyOverview() {
             >
               <div className="w-2 h-2 rounded-full bg-orange-500" />
               <p className="text-orange-500 font-semibold tracking-widest text-xs">
-                WELCOME TO RAINBOW TRAVEL & TOURISM
+                {t("homeCompanyKicker")}
               </p>
               <div className="w-2 h-2 rounded-full bg-orange-500" />
             </motion.div>
@@ -88,7 +91,7 @@ export default function CompanyOverview() {
             transition={{ duration: 0.8, delay: 0.3 }}
             viewport={{ once: true }}
           >
-            Located in the heart of <span className="font-semibold text-gray-900">Nablus – Nablus City Center, second floor</span> – we are your trusted travel agency dedicated to providing complete travel solutions and creating memorable experiences. With competitive prices, excellent service, organized trips, and continuous offers, we make your dream vacation a reality.
+            {t("homeCompanyDesc")}
           </motion.p>
         </motion.div>
       </div>

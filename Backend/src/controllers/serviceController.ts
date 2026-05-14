@@ -35,15 +35,7 @@ export const getServiceById = async (req: Request, res: Response) => {
 
 export const createService = async (req: Request, res: Response) => {
   try {
-    const { title, description, price, image, duration } = req.body;
-
-    const service = new Service({
-      title,
-      description,
-      price,
-      image,
-      duration
-    });
+    const service = new Service(req.body);
 
     await service.save();
 
@@ -59,21 +51,15 @@ export const createService = async (req: Request, res: Response) => {
 
 export const updateService = async (req: Request, res: Response) => {
   try {
-    const { title, description, price, image, duration } = req.body;
-
-    let service = await Service.findById(req.params.id);
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
 
     if (!service) {
       return res.status(404).json({ error: 'Service not found' });
     }
-
-    if (title) service.title = title;
-    if (description) service.description = description;
-    if (price) service.price = price;
-    if (image) service.image = image;
-    if (duration) service.duration = duration;
-
-    await service.save();
 
     return res.status(200).json({
       message: 'Service updated successfully',

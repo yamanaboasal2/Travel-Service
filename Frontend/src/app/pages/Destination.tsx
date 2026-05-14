@@ -23,9 +23,51 @@ import aqabaVid from "@/assets/Aqaba Beach Trip.mp4";
 import ammanVid from "@/assets/Amaan.mp4";
 import jordanImg from "@/assets/jordan.jpg";
 
+export type DestinationItem = {
+  name: string;
+  image: string;
+  tours: number;
+};
+
+export const ADMIN_DESTINATIONS_STORAGE_KEY = "rainbowTravelAdminDestinations";
+
+export function getAdminDestinations(): DestinationItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const storedDestinations = localStorage.getItem(ADMIN_DESTINATIONS_STORAGE_KEY);
+    return storedDestinations ? JSON.parse(storedDestinations) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveAdminDestinations(nextDestinations: DestinationItem[]) {
+  localStorage.setItem(ADMIN_DESTINATIONS_STORAGE_KEY, JSON.stringify(nextDestinations));
+}
+
+export const destinations: DestinationItem[] = [
+    { name: "France", image: france, tours: 4 },
+    { name: "Dubai", image: dubai, tours: 3 },
+    { name: "Egypt", image: egypt, tours: 5 },
+    { name: "Saudi Arabia", image: saudiArabia, tours: 3 },
+    { name: "Maldives", image: maldives, tours: 4 },
+    { name: "Italy", image: italy, tours: 6 },
+    { name: "Turkey", image: turkey, tours: 5 },
+    { name: "Amman", image: amman, tours: 2 },
+    { name: "Cairo", image: cairo, tours: 4 },
+    { name: "Hong Kong", image: hongKong, tours: 3 },
+    { name: "Jerusalem", image: jerusalem, tours: 5 },
+    { name: "Tokyo", image: tokyo, tours: 4 },
+  ];
+
 export function Destination() {
   const [searchQuery, setSearchQuery] = useState("");
   const [toursFilter, setToursFilter] = useState(0);
+  const [adminDestinations] = useState<DestinationItem[]>(() => getAdminDestinations());
+  const allDestinations = [...adminDestinations, ...destinations];
   const turkeyRowRef = useRef<HTMLDivElement | null>(null);
   const egyptRowRef = useRef<HTMLDivElement | null>(null);
   const jordanRowRef = useRef<HTMLDivElement | null>(null);
@@ -47,22 +89,7 @@ export function Destination() {
     { src: ammanVid, name: "Amman", region: "Jordan" },
   ];
 
-  const destinations = [
-    { name: "France", image: france, tours: 4 },
-    { name: "Dubai", image: dubai, tours: 3 },
-    { name: "Egypt", image: egypt, tours: 5 },
-    { name: "Saudi Arabia", image: saudiArabia, tours: 3 },
-    { name: "Maldives", image: maldives, tours: 4 },
-    { name: "Italy", image: italy, tours: 6 },
-    { name: "Turkey", image: turkey, tours: 5 },
-    { name: "Amman", image: amman, tours: 2 },
-    { name: "Cairo", image: cairo, tours: 4 },
-    { name: "Hong Kong", image: hongKong, tours: 3 },
-    { name: "Jerusalem", image: jerusalem, tours: 5 },
-    { name: "Tokyo", image: tokyo, tours: 4 },
-  ];
-
-  const filteredDestinations = destinations.filter((destination) => {
+  const filteredDestinations = allDestinations.filter((destination) => {
     const matchesSearch = destination.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTours = toursFilter === 0 || destination.tours === toursFilter;
     return matchesSearch && matchesTours;

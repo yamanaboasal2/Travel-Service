@@ -8,6 +8,11 @@ import serviceRoutes from './routes/serviceRoutes';
 import offerRoutes from './routes/offerRoutes';
 import bookingRoutes from './routes/bookingRoutes';
 import contactRoutes from './routes/contactRoutes';
+import destinationRoutes from './routes/destinationRoutes';
+import settingsRoutes from './routes/settingsRoutes';
+import userRoutes from './routes/userRoutes';
+import commentRoutes from './routes/commentRoutes';
+import { seedDatabase } from './utils/seedDatabase';
 
 // Load environment variables FIRST
 dotenv.config();
@@ -17,6 +22,15 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/travel-service';
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const CORS_ORIGIN = process.env.FRONTEND_URL || 'http://localhost:5174';
+const allowedOrigins = [
+  CORS_ORIGIN,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://127.0.0.1:5175'
+];
 
 // Middleware configuration
 app.use(express.json());
@@ -25,7 +39,14 @@ app.use(express.urlencoded({ extended: true }));
 // CORS configuration - IMPORTANT FOR FRONTEND
 console.log(`[${new Date().toISOString()}] 🌐 CORS configured for: ${CORS_ORIGIN}`);
 app.use(cors({
-  origin: CORS_ORIGIN,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked origin: ${origin}`));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -37,6 +58,10 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/offers', offerRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/destinations', destinationRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/comments', commentRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
@@ -65,6 +90,7 @@ const connectDatabase = async () => {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
     });
+    await seedDatabase();
     
     console.log(`[${new Date().toISOString()}] ✅ MongoDB connected successfully`);
   } catch (error) {

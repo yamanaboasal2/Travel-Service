@@ -4,12 +4,36 @@ const bookingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Please provide a user ID']
+    default: null
   },
   serviceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Service',
-    required: [true, 'Please provide a service ID']
+    default: null
+  },
+  packageId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Offer',
+    default: null
+  },
+  customer: {
+    name: { type: String, default: '' },
+    email: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    nationality: { type: String, default: '' },
+    passportType: { type: String, default: '' }
+  },
+  selectedServices: {
+    type: [String],
+    default: []
+  },
+  destination: {
+    type: String,
+    default: ''
+  },
+  tripType: {
+    type: String,
+    default: ''
   },
   bookingDate: {
     type: Date,
@@ -33,6 +57,14 @@ const bookingSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Please provide total price'],
     min: 0
+  },
+  paymentMethod: {
+    type: String,
+    default: 'cash'
+  },
+  notes: {
+    type: String,
+    default: ''
   },
   createdAt: {
     type: Date,

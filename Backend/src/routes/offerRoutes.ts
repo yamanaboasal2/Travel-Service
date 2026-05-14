@@ -20,10 +20,12 @@ router.post(
   [
     body('title').trim().notEmpty().withMessage('Title is required'),
     body('description').notEmpty().withMessage('Description is required'),
+    body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('discount')
+      .optional()
       .isInt({ min: 0, max: 100 })
       .withMessage('Discount must be between 0 and 100'),
-    body('expiryDate').isISO8601().withMessage('Valid expiry date is required')
+    body('expiryDate').optional().isISO8601().withMessage('Valid expiry date is required')
   ],
   validationErrorHandler,
   offerController.createOffer

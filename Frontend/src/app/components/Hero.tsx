@@ -8,10 +8,14 @@ import banner2 from "@/assets/h1-banner2.jpg";
 import planLeft from "@/assets/h1-planleft.png";
 import planLeft2 from "@/assets/h1-planleft2.png";
 import planRight from "@/assets/h1-planright.png";
+import { useLanguage } from "../contexts/LanguageContext";
+import { Link } from "react-router-dom";
 
 export default function Hero() {
+  const { t } = useLanguage();
+
   return (
-    <section className="relative w-full h-[100vh] overflow-hidden">
+    <section className="relative w-full h-[100vh] overflow-hidden" dir="ltr">
 
       {/* SOFT MULTI-LAYER BACKGROUND */}
       <div
@@ -81,6 +85,47 @@ export default function Hero() {
 
       {/* CONTENT */}
       <div className="relative z-[10] flex items-center justify-between h-full px-8 lg:px-16 gap-8 -ml-10">
+        {/* FLOATING TILTED CARDS WITH FLIGHT PATH - FIXED LEFT SIDE */}
+        <div className="pointer-events-none absolute left-0 top-20 z-[18] hidden h-72 w-80 md:block lg:left-0">
+          <motion.svg
+            className="absolute -top-20 -left-40 z-[5] h-40 w-96 opacity-75"
+            viewBox="0 0 300 150"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.5 }}
+          >
+            <motion.path
+              d="M 20 100 Q 100 20 250 50"
+              stroke="rgba(255, 255, 255, 0.3)"
+              strokeWidth="2"
+              fill="none"
+              strokeDasharray="5,5"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 2, delay: 0.7 }}
+            />
+          </motion.svg>
+
+          <motion.div
+            className="absolute right-20 top-0 h-56 w-44 overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/15"
+            style={{ rotate: "-12deg" }}
+            animate={{ y: [0, -16, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            whileHover={{ scale: 1.05, rotate: "-10deg" }}
+          >
+            <img src={banner2} className="h-full w-full object-cover" />
+          </motion.div>
+
+          <motion.div
+            className="absolute -right-16 bottom-0 h-56 w-44 overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/15"
+            style={{ rotate: "12deg" }}
+            animate={{ y: [0, -20, 0] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+            whileHover={{ scale: 1.05, rotate: "10deg" }}
+          >
+            <img src={banner1} className="h-full w-full object-cover" />
+          </motion.div>
+        </div>
 
         {/* LEFT SIDE - TEXT & CARDS & DECORATIONS */}
         <div className="text-white flex flex-col justify-center items-center text-center relative w-full">
@@ -115,7 +160,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            IT'S TIME TO
+            {t("heroKicker")}
           </motion.p>
 
           <motion.h1 
@@ -125,7 +170,7 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            TRAVEL <br /> EXPLORE
+            {t("heroTitleLine1")} <br /> {t("heroTitleLine2")}
           </motion.h1>
 
           {/* separator removed per request */}
@@ -137,9 +182,10 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            THE WORLD WITH US!
+            {t("heroSubtitle")}
           </motion.p>
 
+          <Link to="/booking" className="relative z-20 w-fit">
           <motion.button 
             className="w-fit px-8 py-3 bg-orange-500 text-white rounded-full font-semibold transition transform hover:scale-110 shadow-lg relative z-20 mt-4 hover:bg-orange-600"
             whileHover={{ scale: 1.1 }}
@@ -148,60 +194,10 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            Book Now →
+            {t("bookNow")} →
           </motion.button>
+          </Link>
 
-          {/* FLOATING TILTED CARDS WITH FLIGHT PATH - LEFT SIDE */}
-          <div className="absolute left-0 bottom-16 w-80 h-72 z-[15]">
-            
-            {/* FLIGHT PATH LINE LEFT */}
-            <motion.svg 
-              className="absolute -top-20 -left-40 w-96 h-40 z-[5] opacity-75"
-              viewBox="0 0 300 150"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 0.5 }}
-            >
-              <motion.path 
-                d="M 20 100 Q 100 20 250 50"
-                stroke="rgba(255, 255, 255, 0.3)"
-                strokeWidth="2"
-                fill="none"
-                strokeDasharray="5,5"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 2, delay: 0.7 }}
-              />
-            </motion.svg>
-
-            {/* CARD 1 - BANNER2 */}
-            <motion.div
-              className="absolute w-44 h-56 rounded-3xl shadow-2xl overflow-hidden top-0 right-20 ring-1 ring-white/15"
-              style={{ rotate: "-12deg" }}
-              animate={{ y: [0, -16, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              whileHover={{ scale: 1.05, rotate: "-10deg" }}
-            >
-              <img
-                src={banner2}
-                className="w-full h-full object-cover"
-              />
-            </motion.div>
-{/* CARD 2 - BANNER1 */}
-<motion.div
-  className="absolute w-44 h-56 rounded-3xl shadow-2xl overflow-hidden -right-16 bottom-0 ring-1 ring-white/15"
-  style={{ rotate: "12deg" }}
-  animate={{ y: [0, -20, 0] }}
-  transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-  whileHover={{ scale: 1.05, rotate: "10deg" }}
->
-  <img
-    src={banner1}
-    className="w-full h-full object-cover"
-  />
-</motion.div>
-           
-          </div>
         </div>
 
         {/* RIGHT SIDE - OVAL CONTAINER & DECORATIONS */}

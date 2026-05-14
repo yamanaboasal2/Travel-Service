@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, MapPin, Compass } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
 import dubai from "@/assets/dubi.jpg";
 import egypt from "@/assets/eygpt.jpg";
 import france from "@/assets/france.jpg";
@@ -10,6 +11,7 @@ import saudiArabia from "@/assets/sudi arabia.jpg";
 import turkey from "@/assets/turkya.jpg";
 
 export default function DestinationCarousel() {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
@@ -20,49 +22,49 @@ export default function DestinationCarousel() {
       name: "Dubai",
       image: dubai,
       tours: 3,
-      description: "Luxury Desert City",
+      descriptionKey: "luxuryDesertCity",
       color: "from-amber-500",
     },
     {
       name: "Egypt",
       image: egypt,
       tours: 5,
-      description: "Ancient Wonders",
+      descriptionKey: "ancientWonders",
       color: "from-orange-600",
     },
     {
       name: "France",
       image: france,
       tours: 4,
-      description: "City of Lights",
+      descriptionKey: "cityOfLights",
       color: "from-blue-600",
     },
     {
       name: "Italy",
       image: italy,
       tours: 6,
-      description: "Romantic Getaway",
+      descriptionKey: "romanticGetaway",
       color: "from-red-600",
     },
     {
       name: "Maldives",
       image: maldives,
       tours: 4,
-      description: "Tropical Paradise",
+      descriptionKey: "tropicalParadise",
       color: "from-cyan-500",
     },
     {
       name: "Saudi Arabia",
       image: saudiArabia,
       tours: 3,
-      description: "Cultural Heritage",
+      descriptionKey: "culturalHeritage",
       color: "from-yellow-700",
     },
     {
       name: "Turkey",
       image: turkey,
       tours: 5,
-      description: "Where East Meets West",
+      descriptionKey: "eastMeetsWest",
       color: "from-purple-600",
     },
   ];
@@ -205,7 +207,7 @@ export default function DestinationCarousel() {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              ✈️ EXPLORE DESTINATIONS
+              {t("exploreDestinationsLabel")}
             </motion.p>
 
             <motion.h2
@@ -216,7 +218,7 @@ export default function DestinationCarousel() {
               transition={{ duration: 0.8, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              Popular Destinations
+              {t("popularDestinations")}
             </motion.h2>
 
             <motion.p
@@ -226,7 +228,7 @@ export default function DestinationCarousel() {
               transition={{ duration: 0.8, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              Drag to explore amazing destinations around the world
+              {t("dragExplore")}
             </motion.p>
           </motion.div>
 
@@ -305,11 +307,11 @@ export default function DestinationCarousel() {
                               className="text-3xl lg:text-4xl font-black text-white mb-2"
                               style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                             >
-                              {destination.name}
+                              {t(destination.name)}
                             </motion.h3>
 
                             <p className="text-white/85 text-sm mb-4 font-light">
-                              {destination.description}
+                              {t(destination.descriptionKey)}
                             </p>
 
                             <motion.div
@@ -318,7 +320,7 @@ export default function DestinationCarousel() {
                             >
                               <MapPin className="w-4 h-4 text-orange-300" />
                               <span className="text-white text-sm font-bold">
-                                {destination.tours} Tours
+                                {destination.tours} {t("tours")}
                               </span>
                             </motion.div>
                           </motion.div>

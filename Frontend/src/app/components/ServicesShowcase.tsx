@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import flightBooking from "@/assets/Flight Bookingjpg.jpg";
 import hotelReservations from "@/assets/Hotel Reservations.jpg";
@@ -12,22 +13,41 @@ import deco4 from "@/assets/h1-deco4.svg";
 import istanbulVid from "@/assets/Istanbul Package.mp4";
 import aqabaVid from "@/assets/Aqaba Beach Trip.mp4";
 import sharmVid from "@/assets/Sharm El Sheikh Luxury Package.mp4";
+import { useLanguage } from "../contexts/LanguageContext";
+import { createComment, getAllComments, type CustomerComment } from "../services/apiService";
 
 const services = [
-  { title: "Flight Booking", image: flightBooking },
-  { title: "Hotel Reservations", image: hotelReservations },
-  { title: "Tour Packages", image: tourPackages },
-  { title: "Visa Assistance", image: visaAssistance },
-  { title: "Travel Planning", image: travelPlanning },
-  { title: "Group Travel", image: groupTravel },
+  { title: "Flight Booking", titleKey: "flightBooking", image: flightBooking },
+  { title: "Hotel Reservations", titleKey: "hotelReservations", image: hotelReservations },
+  { title: "Tour Packages", titleKey: "tourPackages", image: tourPackages },
+  { title: "Visa Assistance", titleKey: "visaAssistance", image: visaAssistance },
+  { title: "Travel Planning", titleKey: "travelPlanning", image: travelPlanning },
+  { title: "Group Travel", titleKey: "groupTravel", image: groupTravel },
 ];
 
+type Testimonial = {
+  quote: string;
+  name: string;
+  location: string;
+  initial: string;
+  color: string;
+};
+
+const mapCommentToTestimonial = (comment: CustomerComment): Testimonial => ({
+  quote: comment.comment,
+  name: comment.name,
+  location: comment.city,
+  initial: comment.name.charAt(0).toUpperCase(),
+  color: comment.color || "from-violet-400 to-purple-500",
+});
+
 export default function ServicesShowcase() {
+  const { t } = useLanguage();
   const [page, setPage] = useState(0);
   const [testimonialPage, setTestimonialPage] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({ comment: "", name: "", city: "", phone: "" });
-  const [testimonials, setTestimonials] = useState([
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([
     {
       quote: "Rainbow Travel made our trip to Turkey unforgettable! Everything was perfectly organized, from flights to hotel bookings. Highly recommended!",
       name: "Ahmed Hassan",
@@ -83,22 +103,37 @@ export default function ServicesShowcase() {
     return pages;
   }, [testimonials]);
 
-  const handleCommentSubmit = (e) => {
+  const handleCommentSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (formData.comment.trim() && formData.name.trim() && formData.city.trim()) {
-      const newTestimonial = {
-        quote: formData.comment,
-        name: formData.name,
-        location: formData.city,
-        initial: formData.name.charAt(0).toUpperCase(),
-        color: "from-violet-400 to-purple-500",
-      };
-      setTestimonials([...testimonials, newTestimonial]);
-      setShowSuccess(true);
-      setFormData({ comment: "", name: "", city: "", phone: "" });
-      setTimeout(() => setShowSuccess(false), 3000);
+      try {
+        const savedComment = await createComment({
+          comment: formData.comment,
+          name: formData.name,
+          city: formData.city,
+          phone: formData.phone,
+        });
+        setTestimonials((current) => [mapCommentToTestimonial(savedComment), ...current]);
+        setShowSuccess(true);
+        setFormData({ comment: "", name: "", city: "", phone: "" });
+        setTimeout(() => setShowSuccess(false), 3000);
+      } catch (error) {
+        console.error("Failed to save comment", error);
+      }
     }
   };
+
+  useEffect(() => {
+    getAllComments()
+      .then((comments) => {
+        if (comments.length) {
+          setTestimonials(comments.map(mapCommentToTestimonial));
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load comments", error);
+      });
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -109,7 +144,7 @@ export default function ServicesShowcase() {
   }, [pages.length]);
 
   return (
-    <section className="relative overflow-hidden px-6 py-20 lg:px-14">
+    <section className="relative overflow-hidden px-6 py-20 lg:px-14" dir="ltr">
       <div className="absolute inset-0 bg-transparent" />
       <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.08)_45%,rgba(255,255,255,0.12)_100%)] backdrop-blur-xl" />
       <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-orange-500/8" />
@@ -122,7 +157,7 @@ export default function ServicesShowcase() {
             animate={{ y: [0, -3, 0], x: [0, 4, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            Explore Your Way
+            {t("exploreYourWay")}
           </motion.p>
 
           <motion.h3
@@ -131,9 +166,9 @@ export default function ServicesShowcase() {
             animate={{ y: [0, -4, 0], x: [0, 2, 0] }}
             transition={{ duration: 5.2, repeat: Infinity, ease: "easeInOut" }}
           >
-            Explore
+            {t("exploreDestinations")}
             <br />
-            Our Services
+            {t("ourServices")}
           </motion.h3>
 
           <img src={deco4} alt="decorative compass" className="mt-4 w-10 opacity-80" />
@@ -144,10 +179,10 @@ export default function ServicesShowcase() {
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          <button className="mt-8 inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600">
-            View
+          <Link to="/our-services" className="mt-8 inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600">
+            {t("view")}
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
 
         <div className="relative overflow-hidden p-1">
@@ -175,7 +210,7 @@ export default function ServicesShowcase() {
                       className="text-[34px] leading-none text-white drop-shadow-[0_3px_10px_rgba(0,0,0,0.65)]"
                       style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                     >
-                      {item.title}
+                      {t(item.titleKey)}
                     </p>
                     <ArrowRight className="h-4 w-4 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]" />
                   </div>
@@ -200,11 +235,11 @@ export default function ServicesShowcase() {
       <div className="relative mx-auto mt-16 max-w-[88rem]">
         <div className="mb-6 text-center">
           <p className="inline-block rounded-full px-5 py-2 text-sm md:text-base lg:text-lg font-extrabold tracking-wider uppercase" style={{ background: "rgba(2,12,40,0.08)", color: "var(--sidebar-primary)", letterSpacing: "0.9px", boxShadow: "0 8px 20px rgba(2,12,40,0.06)" }}>
-            Special Offers
+            {t("specialOffers")}
           </p>
 
           <h4 className="mt-4 text-4xl md:text-5xl font-extrabold" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: "var(--sidebar-primary)", textShadow: "0 6px 18px rgba(2,12,40,0.25)" }}>
-            Don't miss out on our amazing travel deals
+            {t("dontMissDeals")}
           </h4>
         </div>
 
@@ -269,9 +304,9 @@ export default function ServicesShowcase() {
                       </p>
                     </div>
 
-                    <button className="rounded-full bg-orange-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-orange-600">
-                      View Offer
-                    </button>
+                    <Link to="/offers" className="rounded-full bg-orange-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-orange-600">
+                      {t("viewOffer")}
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -280,8 +315,9 @@ export default function ServicesShowcase() {
         </div>
 
         <div className="mx-auto mt-8 text-center">
-          <button
-            className="rounded-full px-8 py-3 text-lg md:text-xl font-extrabold"
+          <Link
+            to="/offers"
+            className="inline-flex items-center justify-center rounded-full px-8 py-3 text-lg font-extrabold md:text-xl"
             style={{
               background: "var(--sidebar-primary)",
               color: "white",
@@ -289,19 +325,19 @@ export default function ServicesShowcase() {
               minWidth: 220,
             }}
           >
-            View All Offers
-          </button>
+            {t("viewAllOffers")}
+          </Link>
         </div>
 
         {/* Testimonials / Customer Reviews */}
         <section className="mx-auto mt-20 max-w-[88rem] rounded-3xl p-8" style={{ background: "rgba(255, 140, 0, 0.08)" }}>
           {/* Leave a comment form - at top */}
           <div className="mx-auto mb-12 max-w-3xl rounded-2xl p-8" style={{ background: "rgba(255, 140, 0, 0.12)" }}>
-            <h4 className="text-2xl font-extrabold mb-3 text-slate-800" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: "var(--sidebar-primary)" }}>Leave a comment</h4>
+            <h4 className="text-2xl font-extrabold mb-3 text-slate-800" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: "var(--sidebar-primary)" }}>{t("leaveComment")}</h4>
 
             <form className="space-y-4" onSubmit={handleCommentSubmit}>
               <textarea 
-                placeholder="Your comments" 
+                placeholder={t("yourComments")}
                 value={formData.comment}
                 onChange={(e) => setFormData({...formData, comment: e.target.value})}
                 className="w-full rounded-xl border border-orange-200 bg-white/50 p-4 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400" 
@@ -310,19 +346,19 @@ export default function ServicesShowcase() {
 
               <div className="grid gap-4 md:grid-cols-3">
                 <input 
-                  placeholder="Your name" 
+                  placeholder={t("yourName")}
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="rounded-full border border-orange-200 bg-white/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400" 
                 />
                 <input 
-                  placeholder="City" 
+                  placeholder={t("city")}
                   value={formData.city}
                   onChange={(e) => setFormData({...formData, city: e.target.value})}
                   className="rounded-full border border-orange-200 bg-white/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400" 
                 />
                 <input 
-                  placeholder="Phone" 
+                  placeholder={t("phone")}
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   className="rounded-full border border-orange-200 bg-white/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-400" 
@@ -336,12 +372,12 @@ export default function ServicesShowcase() {
                   exit={{ opacity: 0, y: -10 }}
                   className="rounded-lg bg-green-100 p-3 text-center text-sm font-semibold text-green-700"
                 >
-                  Comment added successfully!
+                  {t("commentAdded")}
                 </motion.div>
               )}
 
               <div className="mt-3">
-                <button type="submit" className="rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-orange-600 transition">Submit</button>
+                <button type="submit" className="rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-orange-600 transition">{t("submit")}</button>
               </div>
             </form>
           </div>
@@ -349,9 +385,9 @@ export default function ServicesShowcase() {
           {/* Testimonials below with slider */}
           <div className="mb-8 text-center">
             <h3 className="text-3xl font-extrabold text-slate-800" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", color: "var(--sidebar-primary)" }}>
-              What Our Customers Say
+              {t("What Our Customers Say")}
             </h3>
-            <p className="mt-2 text-sm text-slate-700">Real experiences from happy travelers</p>
+            <p className="mt-2 text-sm text-slate-700">{t("Real experiences from happy travelers")}</p>
           </div>
 
           <AnimatePresence mode="wait">
