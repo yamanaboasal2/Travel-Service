@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, MapPin, Compass } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import dubai from "@/assets/dubi.jpg";
 import egypt from "@/assets/eygpt.jpg";
@@ -15,6 +15,7 @@ export default function DestinationCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(3);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const destinations = [
@@ -107,8 +108,25 @@ export default function DestinationCarousel() {
     setIsDragging(false);
   };
 
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      if (window.innerWidth < 640) {
+        setVisibleCount(1);
+      } else if (window.innerWidth < 1024) {
+        setVisibleCount(2);
+      } else {
+        setVisibleCount(3);
+      }
+    };
+
+    updateVisibleCount();
+    window.addEventListener("resize", updateVisibleCount);
+
+    return () => window.removeEventListener("resize", updateVisibleCount);
+  }, []);
+
   const visibleDestinations = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < visibleCount; i++) {
     visibleDestinations.push(
       destinations[(currentIndex + i) % destinations.length]
     );
@@ -117,7 +135,7 @@ export default function DestinationCarousel() {
   return (
     <>
       {/* Divider Section - Elegant Separator */}
-      <div className="relative h-32 bg-gradient-to-b from-white via-orange-50 to-transparent overflow-hidden">
+      <div className="relative h-20 overflow-hidden bg-gradient-to-b from-white via-orange-50 to-transparent sm:h-24 lg:h-32">
         <motion.div
           className="absolute inset-0"
           animate={{
@@ -144,7 +162,7 @@ export default function DestinationCarousel() {
 
       {/* Main Carousel Section */}
       <section
-        className="relative w-full min-h-screen py-24 px-8 lg:px-16 overflow-hidden"
+        className="relative w-full overflow-hidden px-4 py-16 sm:px-6 sm:py-20 lg:min-h-screen lg:px-16 lg:py-24"
         ref={containerRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -181,12 +199,12 @@ export default function DestinationCarousel() {
 
         {/* Floating Orbs */}
         <motion.div
-          className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-orange-200 to-orange-100 opacity-20 blur-3xl"
+          className="absolute -left-20 -top-20 h-40 w-40 rounded-full bg-gradient-to-br from-orange-200 to-orange-100 opacity-20 blur-3xl sm:-left-32 sm:-top-32 sm:h-64 sm:w-64 lg:-left-40 lg:-top-40 lg:h-80 lg:w-80"
           animate={{ x: [0, 100, 0], y: [0, 50, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-tl from-orange-200 to-orange-100 opacity-20 blur-3xl"
+          className="absolute -bottom-24 -right-20 h-52 w-52 rounded-full bg-gradient-to-tl from-orange-200 to-orange-100 opacity-20 blur-3xl sm:-bottom-32 sm:-right-32 sm:h-72 sm:w-72 lg:-bottom-40 lg:-right-40 lg:h-96 lg:w-96"
           animate={{ x: [0, -80, 0], y: [0, -60, 0] }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -194,14 +212,14 @@ export default function DestinationCarousel() {
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* HEADER */}
           <motion.div
-            className="text-center mb-20"
+            className="mb-12 text-center sm:mb-16 lg:mb-20"
             initial={{ opacity: 0, y: -30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
             <motion.p
-              className="text-sm font-bold tracking-widest mb-4 text-[#fff1dc]"
+              className="mb-3 text-xs font-bold tracking-[0.22em] text-[#fff1dc] sm:mb-4 sm:text-sm"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -211,7 +229,7 @@ export default function DestinationCarousel() {
             </motion.p>
 
             <motion.h2
-              className="text-5xl lg:text-7xl font-black leading-tight mb-6 bg-gradient-to-r from-orange-800 via-orange-700 to-orange-500 bg-clip-text text-transparent"
+              className="mb-5 bg-gradient-to-r from-orange-800 via-orange-700 to-orange-500 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-4xl lg:mb-6 lg:text-7xl"
               style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -222,7 +240,7 @@ export default function DestinationCarousel() {
             </motion.h2>
 
             <motion.p
-              className="text-lg max-w-2xl mx-auto font-light text-[#ffe8cc]"
+              className="mx-auto max-w-2xl text-sm font-light text-[#ffe8cc] sm:text-base lg:text-lg"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
@@ -237,19 +255,19 @@ export default function DestinationCarousel() {
             {/* Left Arrow */}
             <motion.button
               onClick={handlePrev}
-              className="absolute -left-8 lg:-left-20 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-4 shadow-2xl hover:shadow-3xl hover:bg-gradient-to-br hover:from-orange-500 hover:to-orange-600 hover:text-white transition-all duration-300"
+              className="absolute left-0 top-1/2 z-20 rounded-full bg-white p-2.5 shadow-2xl transition-all duration-300 hover:bg-gradient-to-br hover:from-orange-500 hover:to-orange-600 hover:text-white hover:shadow-3xl sm:-left-3 sm:p-3 lg:-left-20 lg:p-4"
               whileHover={{ scale: 1.15, rotate: -10 }}
               whileTap={{ scale: 0.9 }}
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="h-5 w-5 lg:h-6 lg:w-6" />
             </motion.button>
 
             {/* Carousel Container */}
-            <div className="w-full overflow-hidden px-12 lg:px-24">
-              <div className="flex gap-0 lg:gap-1">
+            <div className="w-full overflow-hidden px-10 sm:px-12 lg:px-24">
+              <div className="flex gap-3 lg:gap-1">
                 {visibleDestinations.map((destination, index) => {
-                  const isCenter = index === 1;
-                  const distance = Math.abs(index - 1);
+                  const activeIndex = Math.floor(visibleCount / 2);
+                  const isCenter = index === activeIndex;
                   const scale = isCenter ? 1 : 0.9;
                   const opacity = isCenter ? 1 : 0.8;
 
@@ -257,12 +275,12 @@ export default function DestinationCarousel() {
                     <motion.div
                       key={`${destination.name}-${currentIndex}-${index}`}
                       className="flex-shrink-0"
-                      style={{ width: "calc(33.333% - 1rem)" }}
+                      style={{ width: `calc(${100 / visibleCount}% - 0.75rem)` }}
                       animate={{ scale, opacity }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
                     >
                       <motion.div
-                      className="relative h-96 lg:h-[32rem] rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl group cursor-pointer border-2 border-white/30"
+                      className="group relative h-80 cursor-pointer overflow-hidden rounded-3xl border-2 border-white/30 shadow-2xl hover:shadow-3xl sm:h-96 lg:h-[32rem]"
                         whileHover={{ y: -15, rotateX: 5 }}
                         transition={{ duration: 0.3 }}
                       >
@@ -285,16 +303,8 @@ export default function DestinationCarousel() {
                         />
 
                         {/* Content */}
-                        <div className="absolute inset-0 flex flex-col justify-between p-6">
-                          {/* Top Icon */}
-                          <div className="flex justify-end">
-                            <motion.div
-                              className="bg-white/25 backdrop-blur-lg rounded-full p-3 group-hover:bg-orange-500 group-hover:shadow-lg transition-all duration-300"
-                              whileHover={{ scale: 1.15, rotate: 180 }}
-                            >
-                              <Compass className="w-5 h-5 text-white" />
-                            </motion.div>
-                          </div>
+                        <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-5 lg:p-6">
+                          <div />
 
                           {/* Bottom Content */}
                           <motion.div
@@ -304,18 +314,18 @@ export default function DestinationCarousel() {
                             viewport={{ once: true }}
                           >
                             <motion.h3
-                              className="text-3xl lg:text-4xl font-black text-white mb-2"
+                              className="mb-2 text-2xl font-black text-white sm:text-3xl lg:text-4xl"
                               style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                             >
                               {t(destination.name)}
                             </motion.h3>
 
-                            <p className="text-white/85 text-sm mb-4 font-light">
+                            <p className="mb-4 text-xs font-light text-white/85 sm:text-sm">
                               {t(destination.descriptionKey)}
                             </p>
 
                             <motion.div
-                              className="flex items-center gap-2 bg-white/30 backdrop-blur-lg rounded-full px-4 py-2 w-fit border border-white/40 group-hover:bg-orange-500/50 transition-all"
+                              className="flex w-fit items-center gap-2 rounded-full border border-white/40 bg-white/30 px-3 py-2 backdrop-blur-lg transition-all group-hover:bg-orange-500/50 sm:px-4"
                               whileHover={{ scale: 1.08 }}
                             >
                               <MapPin className="w-4 h-4 text-orange-300" />
@@ -326,13 +336,6 @@ export default function DestinationCarousel() {
                           </motion.div>
                         </div>
 
-                        {/* Hover Arrow */}
-                        <motion.div
-                          className="absolute bottom-6 right-6 bg-white/40 backdrop-blur-lg rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-orange-500/80 shadow-lg"
-                          whileHover={{ scale: 1.15 }}
-                        >
-                          <ChevronRight className="w-5 h-5 text-white" />
-                        </motion.div>
                       </motion.div>
                     </motion.div>
                   );
@@ -343,17 +346,17 @@ export default function DestinationCarousel() {
             {/* Right Arrow */}
             <motion.button
               onClick={handleNext}
-              className="absolute -right-8 lg:-right-20 top-1/2 -translate-y-1/2 z-20 bg-white rounded-full p-4 shadow-2xl hover:shadow-3xl hover:bg-gradient-to-br hover:from-orange-500 hover:to-orange-600 hover:text-white transition-all duration-300"
+              className="absolute right-0 top-1/2 z-20 rounded-full bg-white p-2.5 shadow-2xl transition-all duration-300 hover:bg-gradient-to-br hover:from-orange-500 hover:to-orange-600 hover:text-white hover:shadow-3xl sm:-right-3 sm:p-3 lg:-right-20 lg:p-4"
               whileHover={{ scale: 1.15, rotate: 10 }}
               whileTap={{ scale: 0.9 }}
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="h-5 w-5 lg:h-6 lg:w-6" />
             </motion.button>
           </div>
 
           {/* Dots Indicator */}
           <motion.div
-            className="flex justify-center gap-3 mt-16"
+            className="mt-10 flex justify-center gap-2 sm:mt-12 lg:mt-16 lg:gap-3"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}

@@ -22,6 +22,7 @@ import sharmVid from "@/assets/Sharm El Sheikh Luxury Package.mp4";
 import aqabaVid from "@/assets/Aqaba Beach Trip.mp4";
 import ammanVid from "@/assets/Amaan.mp4";
 import jordanImg from "@/assets/jordan.jpg";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export type DestinationItem = {
   name: string;
@@ -64,6 +65,7 @@ export const destinations: DestinationItem[] = [
   ];
 
 export function Destination() {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [toursFilter, setToursFilter] = useState(0);
   const [adminDestinations] = useState<DestinationItem[]>(() => getAdminDestinations());
@@ -74,19 +76,19 @@ export function Destination() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const turkeyVideos = [
-    { src: istanbulVid, name: "Istanbul", region: "Turkey" },
-    { src: antalyaVid, name: "Antalya", region: "Turkey" },
-    { src: trabzonVid, name: "Trabzon", region: "Turkey" },
+    { src: istanbulVid, nameKey: "Istanbul", regionKey: "Turkey" },
+    { src: antalyaVid, nameKey: "Antalya", regionKey: "Turkey" },
+    { src: trabzonVid, nameKey: "Trabzon", regionKey: "Turkey" },
   ];
 
   const egyptVideos = [
-    { src: cairoVid, name: "Cairo", region: "Egypt" },
-    { src: sharmVid, name: "Sharm El Sheikh", region: "Egypt" },
+    { src: cairoVid, nameKey: "Cairo", regionKey: "Egypt" },
+    { src: sharmVid, nameKey: "Sharm El Sheikh", regionKey: "Egypt" },
   ];
 
   const jordanVideos = [
-    { src: aqabaVid, name: "Aqaba", region: "Jordan" },
-    { src: ammanVid, name: "Amman", region: "Jordan" },
+    { src: aqabaVid, nameKey: "Aqaba", regionKey: "Jordan" },
+    { src: ammanVid, nameKey: "Amman", regionKey: "Jordan" },
   ];
 
   const filteredDestinations = allDestinations.filter((destination) => {
@@ -97,85 +99,85 @@ export function Destination() {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center bg-fixed text-[#021427]"
+      className="min-h-screen bg-cover bg-center text-[#021427] md:bg-fixed"
       style={{ backgroundImage: `url(${heroBg})` }}
     >
-      <section className="py-32 relative overflow-hidden">
+      <section className="relative overflow-hidden px-4 py-20 sm:py-24 md:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#000816]/80 via-[#021427]/65 to-[#F59E0B]/12 z-0" />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.p className="mb-3 text-sm uppercase tracking-[0.35em] text-[#F59E0B]" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-            Destinations
+        <div className="relative z-10 mx-auto max-w-5xl text-center">
+          <motion.p className="mb-3 text-xs uppercase tracking-[0.22em] text-[#F59E0B] sm:text-sm sm:tracking-[0.35em]" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+            {t("destinations")}
           </motion.p>
 
           <motion.h1
-            className="text-5xl md:text-6xl font-black mb-4"
+            className="mb-4 text-4xl font-black sm:text-5xl md:text-6xl"
             style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '-0.02em' }}
             initial={{ y: 6, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.7 }}
           >
-            <span className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-transparent">Destinations</span>
+            <span className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-transparent">{t("destinations")}</span>
           </motion.h1>
 
           <motion.p
-            className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-white/90"
+            className="mx-auto mt-4 max-w-3xl text-sm leading-7 text-white/90 sm:text-lg sm:leading-8"
             style={{ fontFamily: "'Lora', 'Georgia', serif" }}
             initial={{ y: 8, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.9 }}
           >
-            Discover unforgettable trips tailored just for you.
+            {t("destinationHeroDesc")}
           </motion.p>
         </div>
       </section>
 
       {/* Popular Tourist Attractions Section - Stacked Large Cards */}
-      <section className="relative py-12 lg:py-16 bg-transparent">
+      <section className="relative bg-transparent py-10 sm:py-12 lg:py-16">
         {/* Glass base + orange-leaning gradient overlay */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-white/6 backdrop-blur-3xl" />
           <div className="absolute inset-0 bg-gradient-to-br from-[#021427]/10 via-[#F59E0B]/12 to-[#F59E0B]/8 mix-blend-overlay" />
         </div>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white via-[#F59E0B] to-white" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-              Popular Tourist Attractions
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 text-center sm:mb-10">
+            <h2 className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-3xl font-extrabold text-transparent sm:text-4xl md:text-5xl lg:text-6xl" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+              {t("popularTouristAttractions")}
             </h2>
-            <p className="mt-3 text-lg md:text-xl text-white/90 max-w-3xl mx-auto" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-              Discover beautiful beaches, landmarks, and cultural destinations
+            <p className="mx-auto mt-3 max-w-3xl text-sm leading-7 text-white/90 sm:text-lg md:text-xl" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+              {t("discoverBeachesLandmarks")}
             </p>
           </div>
 
-          <div className="space-y-10">
+          <div className="space-y-6 sm:space-y-10">
             {/* Turkey - large stacked card */}
             <article
-              className="rounded-3xl overflow-hidden shadow-2xl text-white"
+              className="overflow-hidden rounded-2xl text-white shadow-xl sm:rounded-3xl sm:shadow-2xl"
               style={{ background: 'linear-gradient(90deg, rgba(2,20,39,1) 0%, rgba(245,158,11,0.18) 35%, rgba(2,20,39,1) 100%)' }}
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
-                <div className="lg:col-span-6 relative min-h-[28rem]">
-                  <img src={turkey} alt="Turkey" className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute left-6 top-6 bg-[#00000066] px-5 py-3 rounded-xl">
-                    <h3 className="text-2xl md:text-3xl font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>Turkey</h3>
-                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>Top destinations: Istanbul, Antalya, Trabzon</p>
+                <div className="relative min-h-[18rem] sm:min-h-[22rem] lg:col-span-6 lg:min-h-[28rem]">
+                  <img src={turkey} alt={t("Turkey")} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute left-4 top-4 rounded-xl bg-[#00000066] px-4 py-2.5 sm:left-6 sm:top-6 sm:px-5 sm:py-3">
+                    <h3 className="text-xl font-semibold sm:text-2xl md:text-3xl" style={{ fontFamily: "'Playfair Display', serif" }}>{t("Turkey")}</h3>
+                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>{t("turkeyTopDestinations")}</p>
                   </div>
                 </div>
 
-                <div className="lg:col-span-6 p-6 flex flex-col gap-4 justify-center min-h-[28rem]">
+                <div className="flex min-h-[20rem] flex-col justify-center gap-4 p-4 sm:p-6 lg:col-span-6 lg:min-h-[28rem]">
                   <div className="relative">
                     {/* glass layer under videos */}
                     <div className="absolute inset-4 rounded-2xl bg-gradient-to-br from-[#F59E0B]/12 via-[#F59E0B]/8 to-white/6 backdrop-blur-md -z-0" />
-                    <div ref={turkeyRowRef} className="flex gap-6 items-end pb-2 relative z-10" style={{ overflow: 'hidden' }}>
+                    <div ref={turkeyRowRef} className="relative z-10 flex items-end gap-4 overflow-hidden pb-2 sm:gap-6">
                       {turkeyVideos.map((video, i) => {
                         const offsets = [44, 68, 44];
                         const translateY = offsets[i] ?? 44;
                         return (
-                          <motion.div key={i} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.03 }} viewport={{ once: true }} className="w-96 flex-shrink-0 overflow-hidden transform transition-transform duration-300 rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
+                          <motion.div key={i} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.03 }} viewport={{ once: true }} className="w-64 flex-shrink-0 overflow-hidden rounded-t-[2.5rem] transform transition-transform duration-300 sm:w-80 sm:rounded-t-[3rem] lg:w-96 lg:rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
                             <div className="relative">
-                              <video src={video.src} controls className="w-full h-72 object-cover rounded-t-[3.5rem]" />
-                              <div className="absolute left-4 top-4 rounded-full bg-[#021427]/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-md">
-                                {video.name}
+                              <video src={video.src} controls className="h-48 w-full rounded-t-[2.5rem] object-cover sm:h-60 sm:rounded-t-[3rem] lg:h-72 lg:rounded-t-[3.5rem]" />
+                              <div className="absolute left-3 top-3 rounded-full bg-[#021427]/75 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md sm:left-4 sm:top-4 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.25em]">
+                                {t(video.nameKey)}
                               </div>
                             </div>
                           </motion.div>
@@ -183,7 +185,7 @@ export function Destination() {
                       })}
                     </div>
 
-                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 flex gap-2 z-20">
+                    <div className="absolute right-0 top-1/2 z-20 flex -translate-y-1/2 transform gap-2">
                       <button
                         type="button"
                         onClick={() => turkeyRowRef.current?.scrollBy({ left: -320, behavior: 'smooth' })}
@@ -203,8 +205,8 @@ export function Destination() {
                     </div>
                   </div>
 
-                  <p className="mt-2 text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>
-                    Experience the cultural richness and stunning coastlines of Turkey. Swipe the videos to preview highlights from each region.
+                  <p className="mt-2 text-sm leading-7 text-[#ffffffcc] sm:text-base" style={{ fontFamily: "'Lora', serif" }}>
+                    {t("turkeyAttractionDesc")}
                   </p>
 
                 </div>
@@ -213,32 +215,32 @@ export function Destination() {
 
             {/* Egypt - large stacked card */}
             <article
-              className="rounded-3xl overflow-hidden shadow-2xl text-white"
+              className="overflow-hidden rounded-2xl text-white shadow-xl sm:rounded-3xl sm:shadow-2xl"
               style={{ background: 'linear-gradient(90deg, rgba(2,20,39,1) 0%, rgba(245,158,11,0.18) 35%, rgba(2,20,39,1) 100%)' }}
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
-                <div className="lg:col-span-6 relative min-h-[28rem]">
-                  <img src={egypt} alt="Egypt" className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute left-6 top-6 bg-[#00000066] px-5 py-3 rounded-xl">
-                    <h3 className="text-2xl md:text-3xl font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>Egypt</h3>
-                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>Top: Cairo, Sharm El Sheikh</p>
+                <div className="relative min-h-[18rem] sm:min-h-[22rem] lg:col-span-6 lg:min-h-[28rem]">
+                  <img src={egypt} alt={t("Egypt")} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute left-4 top-4 rounded-xl bg-[#00000066] px-4 py-2.5 sm:left-6 sm:top-6 sm:px-5 sm:py-3">
+                    <h3 className="text-xl font-semibold sm:text-2xl md:text-3xl" style={{ fontFamily: "'Playfair Display', serif" }}>{t("Egypt")}</h3>
+                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>{t("egyptTopDestinations")}</p>
                   </div>
                 </div>
 
-                <div className="lg:col-span-6 p-6 flex flex-col gap-4 justify-center min-h-[28rem]">
+                <div className="flex min-h-[20rem] flex-col justify-center gap-4 p-4 sm:p-6 lg:col-span-6 lg:min-h-[28rem]">
                   <div className="relative">
                     {/* glass layer under videos */}
                     <div className="absolute inset-4 rounded-2xl bg-gradient-to-br from-[#F59E0B]/12 via-[#F59E0B]/8 to-white/6 backdrop-blur-md -z-0" />
-                    <div ref={egyptRowRef} className="flex gap-6 items-end pb-2 relative z-10" style={{ overflow: 'hidden' }}>
+                    <div ref={egyptRowRef} className="relative z-10 flex items-end gap-4 overflow-hidden pb-2 sm:gap-6">
                       {egyptVideos.map((video, i) => {
                         const offsets = [44, 36];
                         const translateY = offsets[i] ?? 36;
                         return (
-                          <motion.div key={i} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.03 }} viewport={{ once: true }} className="w-96 flex-shrink-0 overflow-hidden transform transition-transform duration-300 rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
+                          <motion.div key={i} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.03 }} viewport={{ once: true }} className="w-64 flex-shrink-0 overflow-hidden rounded-t-[2.5rem] transform transition-transform duration-300 sm:w-80 sm:rounded-t-[3rem] lg:w-96 lg:rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
                             <div className="relative">
-                              <video src={video.src} controls className="w-full h-72 object-cover rounded-t-[3.5rem]" />
-                              <div className="absolute left-4 top-4 rounded-full bg-[#021427]/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-md">
-                                {video.name}
+                              <video src={video.src} controls className="h-48 w-full rounded-t-[2.5rem] object-cover sm:h-60 sm:rounded-t-[3rem] lg:h-72 lg:rounded-t-[3.5rem]" />
+                              <div className="absolute left-3 top-3 rounded-full bg-[#021427]/75 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md sm:left-4 sm:top-4 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.25em]">
+                                {t(video.nameKey)}
                               </div>
                             </div>
                           </motion.div>
@@ -252,8 +254,8 @@ export function Destination() {
                     </div>
                   </div>
 
-                  <p className="mt-2 text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>
-                    From the pyramids of Cairo to the beaches of Sharm El Sheikh — Egypt offers history and sun in one trip.
+                  <p className="mt-2 text-sm leading-7 text-[#ffffffcc] sm:text-base" style={{ fontFamily: "'Lora', serif" }}>
+                    {t("egyptAttractionDesc")}
                   </p>
 
                 </div>
@@ -262,31 +264,31 @@ export function Destination() {
 
             {/* Jordan - large stacked card */}
             <article
-              className="rounded-3xl overflow-hidden shadow-2xl text-white"
+              className="overflow-hidden rounded-2xl text-white shadow-xl sm:rounded-3xl sm:shadow-2xl"
               style={{ background: 'linear-gradient(90deg, rgba(2,20,39,1) 0%, rgba(245,158,11,0.18) 35%, rgba(2,20,39,1) 100%)' }}
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
-                <div className="lg:col-span-6 relative min-h-[28rem]">
-                  <img src={jordanImg} alt="Jordan" className="absolute inset-0 w-full h-full object-cover" />
-                  <div className="absolute left-6 top-6 bg-[#00000066] px-5 py-3 rounded-xl">
-                    <h3 className="text-2xl md:text-3xl font-semibold" style={{ fontFamily: "'Playfair Display', serif" }}>Jordan</h3>
-                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>Top: Aqaba, Amman</p>
+                <div className="relative min-h-[18rem] sm:min-h-[22rem] lg:col-span-6 lg:min-h-[28rem]">
+                  <img src={jordanImg} alt={t("Jordan")} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute left-4 top-4 rounded-xl bg-[#00000066] px-4 py-2.5 sm:left-6 sm:top-6 sm:px-5 sm:py-3">
+                    <h3 className="text-xl font-semibold sm:text-2xl md:text-3xl" style={{ fontFamily: "'Playfair Display', serif" }}>{t("Jordan")}</h3>
+                    <p className="text-sm text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>{t("jordanTopDestinations")}</p>
                   </div>
                 </div>
 
-                <div className="lg:col-span-6 p-6 flex flex-col gap-4 justify-center min-h-[28rem]">
+                <div className="flex min-h-[20rem] flex-col justify-center gap-4 p-4 sm:p-6 lg:col-span-6 lg:min-h-[28rem]">
                   <div className="relative">
                     <div className="absolute inset-4 rounded-2xl bg-gradient-to-br from-[#F59E0B]/12 via-[#F59E0B]/8 to-white/6 backdrop-blur-md -z-0" />
-                    <div ref={jordanRowRef} className="flex gap-6 items-end pb-2 relative z-10" style={{ overflow: 'hidden' }}>
+                    <div ref={jordanRowRef} className="relative z-10 flex items-end gap-4 overflow-hidden pb-2 sm:gap-6">
                       {jordanVideos.map((video, i) => {
                         const offsets = [28, 18];
                         const translateY = offsets[i] ?? 18;
                         return (
-                          <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.02 }} viewport={{ once: true }} className="w-96 flex-shrink-0 overflow-hidden transform transition-transform duration-300 rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
+                          <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.02 }} viewport={{ once: true }} className="w-64 flex-shrink-0 overflow-hidden rounded-t-[2.5rem] transform transition-transform duration-300 sm:w-80 sm:rounded-t-[3rem] lg:w-96 lg:rounded-t-[3.5rem]" style={{ transform: `translateY(${translateY}px)` }}>
                             <div className="relative">
-                              <video src={video.src} controls className="w-full h-72 object-cover rounded-t-[3.5rem]" />
-                              <div className="absolute left-4 top-4 rounded-full bg-[#021427]/75 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-md">
-                                {video.name}
+                              <video src={video.src} controls className="h-48 w-full rounded-t-[2.5rem] object-cover sm:h-60 sm:rounded-t-[3rem] lg:h-72 lg:rounded-t-[3.5rem]" />
+                              <div className="absolute left-3 top-3 rounded-full bg-[#021427]/75 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md sm:left-4 sm:top-4 sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.25em]">
+                                {t(video.nameKey)}
                               </div>
                             </div>
                           </motion.div>
@@ -300,8 +302,8 @@ export function Destination() {
                     </div>
                   </div>
 
-                  <p className="mt-2 text-[#ffffffcc]" style={{ fontFamily: "'Lora', serif" }}>
-                    Dive into Jordan's Red Sea coast and ancient sites — quick previews above.
+                  <p className="mt-2 text-sm leading-7 text-[#ffffffcc] sm:text-base" style={{ fontFamily: "'Lora', serif" }}>
+                    {t("jordanAttractionDesc")}
                   </p>
 
                 </div>
@@ -319,14 +321,14 @@ export function Destination() {
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           >
             {[
-              "DISCOVER",
-              "EXPLORE",
-              "PLAN YOUR TRIP",
-              "CURATED DESTINATIONS",
-              "DISCOVER",
-              "EXPLORE",
-              "PLAN YOUR TRIP",
-              "CURATED DESTINATIONS",
+              "marqueeDiscover",
+              "marqueeExplore",
+              "marqueePlanTrip",
+              "marqueeCuratedDestinations",
+              "marqueeDiscover",
+              "marqueeExplore",
+              "marqueePlanTrip",
+              "marqueeCuratedDestinations",
             ].map((item, index) => (
               <div key={`${item}-${index}`} className="flex items-center gap-2.5 flex-shrink-0">
                 <span className="h-px w-8 bg-gradient-to-r from-transparent via-[#F59E0B] to-transparent" />
@@ -334,7 +336,7 @@ export function Destination() {
                   className="text-[10px] font-semibold uppercase tracking-[0.42em] text-white/85"
                   style={{ fontFamily: "'Lora', 'Georgia', serif" }}
                 >
-                  {item}
+                  {t(item)}
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-br from-[#F59E0B] to-white shadow-[0_0_14px_rgba(245,158,11,0.55)]" />
               </div>
@@ -342,7 +344,7 @@ export function Destination() {
           </motion.div>
         </div>
 
-      <section className="relative pt-12 md:pt-16 pb-20 md:pb-28 overflow-hidden">
+      <section className="relative overflow-hidden pb-14 pt-8 sm:pt-12 md:pb-28 md:pt-16">
         {/* Background Layers */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/85 via-white/75 to-white/80" />
         <div className="absolute inset-0 bg-gradient-to-br from-[#F59E0B]/8 via-transparent to-[#F59E0B]/5" />
@@ -362,28 +364,28 @@ export function Destination() {
 
         {/* Floating Orbs */}
         <motion.div
-          className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-gradient-to-br from-[#F59E0B]/15 to-orange-200/10 blur-3xl"
+          className="absolute -left-32 -top-32 h-56 w-56 rounded-full bg-gradient-to-br from-[#F59E0B]/15 to-orange-200/10 blur-3xl sm:-left-40 sm:-top-40 sm:h-80 sm:w-80"
           animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-gradient-to-tl from-[#F59E0B]/10 to-orange-100/5 blur-3xl"
+          className="absolute -bottom-28 -right-28 h-64 w-64 rounded-full bg-gradient-to-tl from-[#F59E0B]/10 to-orange-100/5 blur-3xl sm:-bottom-32 sm:-right-32 sm:h-96 sm:w-96"
           animate={{ x: [0, -40, 0], y: [0, -50, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="w-full lg:max-w-sm">
-              <div className="flex items-center gap-3 rounded-full border border-[#021427]/15 bg-white/85 px-5 py-3 backdrop-blur-md shadow-[0_8px_20px_rgba(2,20,39,0.06)]">
+              <div className="flex items-center gap-3 rounded-full border border-[#021427]/15 bg-white/85 px-4 py-3 shadow-[0_8px_20px_rgba(2,20,39,0.06)] backdrop-blur-md sm:px-5">
                 <Search className="h-4 w-4 text-[#021427]/70" />
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={t("searchPlaceholderShort")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent text-sm text-[#021427] placeholder:text-[#021427]/50 focus:outline-none"
-                  aria-label="Search destinations"
+                  aria-label={t("searchDestinations")}
                 />
               </div>
             </div>
@@ -393,23 +395,23 @@ export function Destination() {
                 <button
                   type="button"
                   onClick={() => setIsFilterOpen((current) => !current)}
-                  className="inline-flex items-center gap-2 rounded-full border border-[#021427]/15 bg-white/85 px-4 py-2 text-sm text-[#021427] backdrop-blur-md shadow-[0_8px_20px_rgba(2,20,39,0.06)] transition-all duration-300 hover:bg-white"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#021427]/15 bg-white/85 px-4 py-2.5 text-sm text-[#021427] shadow-[0_8px_20px_rgba(2,20,39,0.06)] backdrop-blur-md transition-all duration-300 hover:bg-white lg:w-auto"
                   style={{ fontFamily: "'Lora', 'Georgia', serif" }}
                   aria-expanded={isFilterOpen}
                   aria-controls="tour-filter-menu"
                 >
                   <SlidersHorizontal className="h-4 w-4 text-[#F59E0B]" />
-                  Filter
+                  {t("filter")}
                 </button>
 
                 {isFilterOpen && (
                   <div
                     id="tour-filter-menu"
-                    className="absolute right-0 top-full z-20 mt-3 w-56 rounded-[1.5rem] border border-white/50 bg-white/95 p-4 shadow-[0_20px_50px_rgba(2,20,39,0.14)] backdrop-blur-xl"
+                    className="absolute left-0 right-0 top-full z-20 mt-3 rounded-[1.5rem] border border-white/50 bg-white/95 p-4 shadow-[0_20px_50px_rgba(2,20,39,0.14)] backdrop-blur-xl sm:left-auto sm:w-56"
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <p className="text-sm font-medium text-[#021427]" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                        Tours 0 - 10
+                        {t("toursRange")}
                       </p>
                       {(searchQuery || toursFilter !== 0) && (
                         <button
@@ -419,7 +421,7 @@ export function Destination() {
                             setToursFilter(0);
                           }}
                           className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#021427]/15 text-[#021427] transition-colors duration-300 hover:bg-[#021427]/5"
-                          aria-label="Clear filters"
+                          aria-label={t("clearFilters")}
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -442,7 +444,7 @@ export function Destination() {
                             checked={toursFilter === num}
                             onChange={() => setToursFilter(toursFilter === num ? 0 : num)}
                             className="h-4 w-4 rounded border-[#021427]/25 text-[#F59E0B] focus:ring-[#F59E0B]"
-                            aria-label={`Filter by ${num} tours`}
+                            aria-label={t("filterByToursCount", { count: num })}
                           />
                           {num}
                         </label>
@@ -454,23 +456,23 @@ export function Destination() {
             </div>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
             {filteredDestinations.length > 0 ? (
               filteredDestinations.map((destination, index) => (
               <motion.article
                 key={destination.name}
-                className="group relative overflow-hidden rounded-t-[9rem] rounded-b-[1.5rem] shadow-[0_20px_50px_rgba(2,20,39,0.16)] transition-all duration-500 hover:shadow-[0_30px_70px_rgba(245,158,11,0.2)]"
+                className="group relative overflow-hidden rounded-t-[6rem] rounded-b-[1.25rem] shadow-[0_18px_42px_rgba(2,20,39,0.16)] transition-all duration-500 hover:shadow-[0_30px_70px_rgba(245,158,11,0.2)] sm:rounded-t-[8rem] lg:rounded-t-[9rem]"
                 initial={{ opacity: 0, y: 24, scale: 0.95 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.6, delay: index * 0.08, ease: 'easeOut' }}
                 whileHover={{ y: -12, scale: 1.02 }}
                 viewport={{ once: true, amount: 0.2 }}
               >
-                <div className="relative overflow-hidden rounded-t-[9rem] rounded-b-[1.5rem]">
+                <div className="relative overflow-hidden rounded-t-[6rem] rounded-b-[1.25rem] sm:rounded-t-[8rem] lg:rounded-t-[9rem] lg:rounded-b-[1.5rem]">
                   <img
                     src={destination.image}
                     alt={destination.name}
-                    className="h-[26rem] w-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                    className="h-[20rem] w-full object-cover object-center transition-transform duration-700 group-hover:scale-110 sm:h-[23rem] lg:h-[26rem]"
                   />
 
                   {/* Multi-layer Gradient Overlay */}
@@ -482,7 +484,7 @@ export function Destination() {
                   />
 
                   <motion.div
-                    className="absolute left-5 right-5 bottom-5 rounded-[1.3rem] border border-white/40 bg-white/12 px-5 py-4 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
+                    className="absolute bottom-4 left-4 right-4 rounded-[1.15rem] border border-white/40 bg-white/12 px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl sm:bottom-5 sm:left-5 sm:right-5 sm:rounded-[1.3rem] sm:px-5 sm:py-4"
                     initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.08 }}
@@ -492,19 +494,19 @@ export function Destination() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3
-                          className="text-[1.9rem] leading-none text-white"
+                          className="text-2xl leading-none text-white sm:text-[1.9rem]"
                           style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                         >
-                          {destination.name}
+                          {t(destination.name)}
                         </h3>
 
                         <div className="mt-2 flex items-center gap-2 text-white/85">
                           <MapPin className="h-4 w-4" />
                           <p
-                            className="text-sm"
+                            className="text-xs sm:text-sm"
                             style={{ fontFamily: "'Lora', 'Georgia', serif" }}
                           >
-                            {destination.tours} {destination.tours === 1 ? "Tour" : "Tours"}
+                            {destination.tours} {destination.tours === 1 ? t("tour") : t("tours")}
                           </p>
                         </div>
                       </div>
@@ -517,7 +519,7 @@ export function Destination() {
             ) : (
               <div className="col-span-full flex items-center justify-center py-20">
                 <p className="text-lg text-[#021427]/70" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                  No destinations found
+                  {t("noDestinationsFound")}
                 </p>
               </div>
             )}

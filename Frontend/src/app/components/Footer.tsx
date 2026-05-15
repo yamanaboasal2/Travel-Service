@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Mail, MapPin, Phone, Star } from "lucide-react";
+import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 import logo from "../../assets/logo.ico";
 
@@ -22,17 +22,6 @@ export function Footer() {
               <p className="text-sm font-semibold text-orange-400">& Tourism</p>
             </div>
           </Link>
-
-          <div className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-200">
-            <span className="mr-2 inline-flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-emerald-300 text-emerald-300" />
-              <Star className="h-3.5 w-3.5 fill-emerald-300 text-emerald-300" />
-              <Star className="h-3.5 w-3.5 fill-emerald-300 text-emerald-300" />
-              <Star className="h-3.5 w-3.5 fill-emerald-300 text-emerald-300" />
-              <Star className="h-3.5 w-3.5 fill-emerald-300 text-emerald-300" />
-            </span>
-            Average rating 4.9/5 from 597 reviews
-          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_0.9fr_1fr_0.9fr]">

@@ -27,8 +27,10 @@ const services = [
 
 type Testimonial = {
   quote: string;
+  quoteKey?: string;
   name: string;
   location: string;
+  locationKey?: string;
   initial: string;
   color: string;
 };
@@ -49,44 +51,56 @@ export default function ServicesShowcase() {
   const [formData, setFormData] = useState({ comment: "", name: "", city: "", phone: "" });
   const [testimonials, setTestimonials] = useState<Testimonial[]>([
     {
-      quote: "Rainbow Travel made our trip to Turkey unforgettable! Everything was perfectly organized, from flights to hotel bookings. Highly recommended!",
+      quote: "testimonialTurkey",
+      quoteKey: "testimonialTurkey",
       name: "Ahmed Hassan",
       location: "Nablus",
+      locationKey: "Nablus",
       initial: "A",
       color: "from-orange-400 to-orange-600",
     },
     {
-      quote: "Best travel agency in Palestine! The staff is professional and helpful. Our Dubai vacation was amazing thanks to their excellent service.",
+      quote: "testimonialDubai",
+      quoteKey: "testimonialDubai",
       name: "Sara Mahmoud",
       location: "Ramallah",
+      locationKey: "Ramallah",
       initial: "S",
       color: "from-blue-600 to-indigo-600",
     },
     {
-      quote: "Competitive prices and excellent deals! Rainbow Travel helped us find the perfect package within our budget. Will definitely book again!",
+      quote: "testimonialDeals",
+      quoteKey: "testimonialDeals",
       name: "Mohammed Ali",
       location: "Jenin",
+      locationKey: "Jenin",
       initial: "M",
       color: "from-emerald-500 to-teal-500",
     },
     {
       quote: "Amazing work, Lina from Nablus! Everything looks super clean and creative 👏✨",
       name: "Lina",
+      quoteKey: "testimonialLina",
       location: "Nablus",
+      locationKey: "Nablus",
       initial: "L",
       color: "from-pink-400 to-rose-500",
     },
     {
       quote: "Great job, Sarah from Ramallah! The design is beautiful and very organized 🤍",
       name: "Sarah",
+      quoteKey: "testimonialSarah",
       location: "Ramallah",
+      locationKey: "Ramallah",
       initial: "S",
       color: "from-cyan-400 to-blue-500",
     },
     {
       quote: "Really impressive, Maya from Jenin! You can clearly see the effort and attention to detail 🌟",
       name: "Maya",
+      quoteKey: "testimonialMaya",
       location: "Jenin",
+      locationKey: "Jenin",
       initial: "M",
       color: "from-yellow-400 to-amber-500",
     },
@@ -179,7 +193,7 @@ export default function ServicesShowcase() {
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
           />
 
-          <Link to="/our-services" className="mt-8 inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600">
+          <Link to="/our-services" className="mt-8 inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-8 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">
             {t("view")}
             <ArrowRight className="h-4 w-4" />
           </Link>
@@ -247,23 +261,32 @@ export default function ServicesShowcase() {
           {[
             {
               title: "Istanbul Package",
+              titleKey: "istanbulPackage",
               price: "$750",
               country: "Turkey",
+              countryKey: "Turkey",
               length: "5 Days / 4 Nights",
+              lengthKey: "fiveDaysFourNights",
               video: istanbulVid,
             },
             {
               title: "Aqaba Beach Trip",
+              titleKey: "aqabaBeachTrip",
               price: "$400",
               country: "Jordan",
+              countryKey: "Jordan",
               length: "4 Days / 3 Nights",
+              lengthKey: "fourDaysThreeNights",
               video: aqabaVid,
             },
             {
               title: "Sharm El Sheikh Luxury",
+              titleKey: "sharmElSheikhLuxury",
               price: "$900",
               country: "Egypt",
+              countryKey: "Egypt",
               length: "5 Days / 4 Nights",
+              lengthKey: "fiveDaysFourNights",
               video: sharmVid,
             },
           ].map((offer) => (
@@ -285,7 +308,7 @@ export default function ServicesShowcase() {
 
                 <div className="absolute left-4 bottom-4 right-4">
                   <h5 className="text-3xl font-extrabold text-white drop-shadow-lg" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-                    {offer.title}
+                    {t(offer.titleKey)}
                   </h5>
                 </div>
               </div>
@@ -293,8 +316,8 @@ export default function ServicesShowcase() {
               <div className="px-5 py-4 bg-white/60 backdrop-blur-sm">
                 <div className="mt-1 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium" style={{ color: "var(--sidebar-primary)" }}>{offer.country}</p>
-                    <p className="mt-1 text-sm" style={{ color: "rgba(2,12,40,0.75)" }}>{offer.length}</p>
+                    <p className="text-sm font-medium" style={{ color: "var(--sidebar-primary)" }}>{t(offer.countryKey)}</p>
+                    <p className="mt-1 text-sm" style={{ color: "rgba(2,12,40,0.75)" }}>{t(offer.lengthKey)}</p>
                   </div>
 
                   <div className="flex items-center gap-4">
@@ -303,10 +326,6 @@ export default function ServicesShowcase() {
                         {offer.price}
                       </p>
                     </div>
-
-                    <Link to="/offers" className="rounded-full bg-orange-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-orange-600">
-                      {t("viewOffer")}
-                    </Link>
                   </div>
                 </div>
               </div>
@@ -315,16 +334,7 @@ export default function ServicesShowcase() {
         </div>
 
         <div className="mx-auto mt-8 text-center">
-          <Link
-            to="/offers"
-            className="inline-flex items-center justify-center rounded-full px-8 py-3 text-lg font-extrabold md:text-xl"
-            style={{
-              background: "var(--sidebar-primary)",
-              color: "white",
-              boxShadow: "0 18px 40px rgba(2,12,40,0.22)",
-              minWidth: 220,
-            }}
-          >
+          <Link to="/offers" className="inline-flex min-w-[220px] items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-8 py-3 text-lg font-extrabold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] md:text-xl">
             {t("viewAllOffers")}
           </Link>
         </div>
@@ -377,7 +387,7 @@ export default function ServicesShowcase() {
               )}
 
               <div className="mt-3">
-                <button type="submit" className="rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-lg hover:bg-orange-600 transition">{t("submit")}</button>
+                <button type="submit" className="inline-flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">{t("submit")}</button>
               </div>
             </form>
           </div>
@@ -401,14 +411,14 @@ export default function ServicesShowcase() {
               <div className="grid gap-6 md:grid-cols-3">
                 {testimonialPages[testimonialPage]?.map((testimonial) => (
                   <blockquote key={testimonial.name} className="rounded-2xl p-6" style={{ background: "rgba(255, 140, 0, 0.12)" }}>
-                    <p className="text-base text-slate-800 italic mb-4">"{testimonial.quote}"</p>
+                    <p className="text-base text-slate-800 italic mb-4">"{testimonial.quoteKey ? t(testimonial.quoteKey) : testimonial.quote}"</p>
                     <div className="flex items-center gap-3">
                       <div className={`h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-br ${testimonial.color} text-white font-bold`}>
                         {testimonial.initial}
                       </div>
                       <div className="text-sm">
                         <div className="font-semibold text-slate-900">{testimonial.name}</div>
-                        <div className="text-xs text-slate-700">{testimonial.location}</div>
+                        <div className="text-xs text-slate-700">{testimonial.locationKey ? t(testimonial.locationKey) : testimonial.location}</div>
                       </div>
                     </div>
                   </blockquote>

@@ -69,7 +69,7 @@ export default function CompanyOverview() {
             transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            Rainbow Travel <br /> & Tourism
+            {t("companyNameLine1")} <br /> {t("companyNameLine2")}
           </motion.h1>
 
           <motion.div

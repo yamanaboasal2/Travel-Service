@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import {
-  BarChart3,
   CalendarCheck,
   ChevronRight,
   CircleDollarSign,
@@ -30,34 +29,26 @@ import {
   deleteComment,
   deleteContactMessage,
   getAllBookings,
+  getSystemHealth,
   getAllMessages,
+  getAllUsers,
   getAdminComments,
   getStoredUser,
+  loginUser,
   logoutUser,
   updateBooking as updateBackendBooking,
+  updateUser as updateBackendUser,
+  type AdminUserRecord as BackendUser,
   type Booking as BackendBooking,
   type ContactMessage,
   type CustomerComment,
+  type SystemHealth,
 } from "../services/apiService";
 import { destinations, getAdminDestinations, saveAdminDestinations, type DestinationItem } from "./Destination";
 import { getAdminOfferPackages, offers, saveAdminOfferPackages, type OfferPackage } from "./Offers";
 import { getAdminServices, saveAdminServices, services, type ServiceItem } from "./OurServices";
 
 type AdminSection = "overview" | "bookings" | "packages" | "destinations" | "services" | "offers" | "messages" | "users" | "analytics" | "settings";
-
-const stats = [
-  { label: "Total Bookings", value: "2,847", change: "+12.5%", helper: "from last month", icon: CalendarCheck, color: "bg-[#F59E0B]" },
-  { label: "Total Revenue", value: "$45,231", change: "+8.2%", helper: "from last month", icon: CircleDollarSign, color: "bg-[#0a5d7a]" },
-  { label: "Active Users", value: "1,234", change: "-2.1%", helper: "from last month", icon: Users, color: "bg-[#14B8A6]", negative: true },
-  { label: "Conversion Rate", value: "3.2%", change: "+0.5%", helper: "from last month", icon: BarChart3, color: "bg-[#F46C28]" },
-];
-
-const bookings: AdminBookingRow[] = [
-  { customer: "Sarah Johnson", package: "Istanbul Package", amount: "$750", status: "Completed", date: "2 hours ago" },
-  { customer: "Mike Chen", package: "Aqaba Beach Trip", amount: "$400", status: "Pending", date: "4 hours ago" },
-  { customer: "Emily Davis", package: "Sharm El Sheikh Luxury Package", amount: "$900", status: "Completed", date: "6 hours ago" },
-  { customer: "David Wilson", package: "Dubai Luxury Experience", amount: "$1,200", status: "Cancelled", date: "8 hours ago" },
-];
 
 const navItems: { id: AdminSection; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -133,7 +124,7 @@ type ServiceDraft = {
 };
 
 type AdminUser = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   role: "admin" | "user";
@@ -141,6 +132,18 @@ type AdminUser = {
   bookings: number;
   spent: string;
   joined: string;
+};
+
+type SystemStatusItem = {
+  label: string;
+  value: string;
+  tone: "emerald" | "amber" | "rose" | "sky";
+};
+
+type ActivityItem = {
+  color: string;
+  title: string;
+  time: string;
 };
 
 const defaultPackageDraft: PackageDraft = {
@@ -172,13 +175,100 @@ const defaultServiceDraft: ServiceDraft = {
   image: services[0].image,
 };
 
-const initialUsers: AdminUser[] = [
-  { id: 1, name: "Yaman Abu Asal", email: "yamanabuasal20@gmail.com", role: "admin", status: "Active", bookings: 12, spent: "$4,820", joined: "Jan 12, 2026" },
-  { id: 2, name: "Sarah Johnson", email: "sarah.johnson@email.com", role: "user", status: "Active", bookings: 5, spent: "$2,140", joined: "Feb 03, 2026" },
-  { id: 3, name: "Mike Chen", email: "mike.chen@email.com", role: "user", status: "Active", bookings: 3, spent: "$1,220", joined: "Mar 18, 2026" },
-  { id: 4, name: "Emily Davis", email: "emily.davis@email.com", role: "user", status: "Blocked", bookings: 1, spent: "$280", joined: "Apr 09, 2026" },
-  { id: 5, name: "David Wilson", email: "david.wilson@email.com", role: "user", status: "Active", bookings: 2, spent: "$1,350", joined: "Apr 27, 2026" },
-];
+const formatMoney = (value: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+
+const formatDate = (value?: string) => {
+  if (!value) {
+    return "New account";
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "New account" : date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+};
+
+const formatTimeAgo = (value?: string) => {
+  if (!value) {
+    return "Just now";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "Just now";
+  }
+
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  if (diffMinutes < 1) {
+    return "Just now";
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes === 1 ? "" : "s"} ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+};
+
+const getDatabaseLabel = (health?: SystemHealth | null) => {
+  if (!health?.database) {
+    return "Unknown";
+  }
+
+  switch (health.database.status) {
+    case "connected":
+      return "Healthy";
+    case "connecting":
+      return "Connecting";
+    case "disconnecting":
+      return "Disconnecting";
+    default:
+      return "Offline";
+  }
+};
+
+const getDatabaseTone = (health?: SystemHealth | null): SystemStatusItem["tone"] => {
+  if (!health?.database) {
+    return "amber";
+  }
+
+  if (health.database.status === "connected") {
+    return "emerald";
+  }
+
+  if (health.database.status === "connecting") {
+    return "sky";
+  }
+
+  return "rose";
+};
+
+const mapBackendUser = (backendUser: BackendUser, userBookings: BackendBooking[]): AdminUser => {
+  const userId = backendUser._id || backendUser.id || backendUser.email;
+  const relatedBookings = userBookings.filter((booking) => {
+    const bookingUserId = typeof booking.userId === "string" ? booking.userId : "";
+    return bookingUserId === userId || booking.customer?.email?.toLowerCase() === backendUser.email.toLowerCase();
+  });
+  const spent = relatedBookings.reduce((total, booking) => total + Number(booking.totalPrice || 0), 0);
+
+  return {
+    id: userId,
+    name: backendUser.name,
+    email: backendUser.email,
+    role: backendUser.role,
+    status: backendUser.status === "blocked" ? "Blocked" : "Active",
+    bookings: relatedBookings.length,
+    spent: formatMoney(spent),
+    joined: formatDate(backendUser.createdAt),
+  };
+};
 
 function BookingsTable({
   rows,
@@ -189,7 +279,7 @@ function BookingsTable({
   onDelete?: (id: string) => void;
   onStatusChange?: (id: string, status: BackendBooking["status"]) => void;
 }) {
-  const visibleRows = rows?.length ? rows : bookings;
+  const visibleRows = rows || [];
 
   return (
     <section className="overflow-hidden rounded-2xl border border-white/50 bg-white/42 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl">
@@ -198,7 +288,11 @@ function BookingsTable({
       </div>
 
       <div className="grid gap-3 p-3 sm:hidden">
-        {visibleRows.map((booking) => (
+        {visibleRows.length === 0 ? (
+          <div className="rounded-2xl border border-white/55 bg-white/55 p-5 text-sm font-bold text-[#6E8189]">
+            No bookings found from the backend yet.
+          </div>
+        ) : visibleRows.map((booking) => (
           <article key={booking.id || booking.customer} className="rounded-2xl border border-white/55 bg-white/55 p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -243,9 +337,7 @@ function BookingsTable({
                   Delete
                 </button>
               </div>
-            ) : (
-              <p className="mt-4 rounded-full bg-white/55 px-3 py-2 text-center text-xs font-bold text-[#6E8189]">Static booking</p>
-            )}
+            ) : null}
           </article>
         ))}
       </div>
@@ -263,7 +355,13 @@ function BookingsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-white/55">
-            {visibleRows.map((booking) => (
+            {visibleRows.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-5 py-8 text-center text-sm font-bold text-[#6E8189]">
+                  No bookings found from the backend yet.
+                </td>
+              </tr>
+            ) : visibleRows.map((booking) => (
               <tr key={booking.id || booking.customer} className="transition hover:bg-white/35">
                 <td className="px-5 py-4 font-bold text-[#193945]">
                   <span className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#0a5d7a]/10 text-xs text-[#0a5d7a]">
@@ -295,9 +393,7 @@ function BookingsTable({
                         Delete
                       </button>
                     </div>
-                  ) : (
-                    <span className="text-xs font-bold text-[#6E8189]">Static</span>
-                  )}
+                  ) : null}
                 </td>
               </tr>
             ))}
@@ -522,7 +618,7 @@ function SettingsPanel() {
       </article>
 
       <div className="flex justify-end">
-        <button className="inline-flex items-center gap-2 rounded-full bg-[#F46C28] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#F46C28]/20 transition hover:bg-[#DF5C1F]">
+        <button className="inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">
           <Save className="h-4 w-4" />
           Save Settings
         </button>
@@ -673,7 +769,7 @@ function AddPackageForm({
       </div>
 
       <div className="mt-5 flex justify-end">
-        <button type="button" onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#F46C28] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#F46C28]/20 transition hover:bg-[#DF5C1F] sm:w-auto">
+        <button type="button" onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] sm:w-auto">
           <Package className="h-4 w-4" />
           Save Package
         </button>
@@ -789,7 +885,7 @@ function AddServiceForm({
         </div>
       </div>
       <div className="mt-5 flex justify-end">
-        <button type="button" onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#F46C28] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#F46C28]/20 transition hover:bg-[#DF5C1F] sm:w-auto">
+        <button type="button" onClick={onSubmit} className="inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] sm:w-auto">
           <Plane className="h-4 w-4" />
           Save Service
         </button>
@@ -800,6 +896,8 @@ function AddServiceForm({
 
 function UsersPanel({
   users,
+  isLoading,
+  error,
   search,
   statusFilter,
   onSearchChange,
@@ -808,12 +906,14 @@ function UsersPanel({
   onToggleRole,
 }: {
   users: AdminUser[];
+  isLoading: boolean;
+  error: string;
   search: string;
   statusFilter: "all" | "Active" | "Blocked";
   onSearchChange: (value: string) => void;
   onStatusFilterChange: (value: "all" | "Active" | "Blocked") => void;
-  onToggleStatus: (userId: number) => void;
-  onToggleRole: (userId: number) => void;
+  onToggleStatus: (userId: string) => void;
+  onToggleRole: (userId: string) => void;
 }) {
   const filteredUsers = users.filter((user) => {
     const query = search.toLowerCase().trim();
@@ -871,7 +971,19 @@ function UsersPanel({
         </div>
 
         <div className="grid gap-3 sm:hidden">
-          {filteredUsers.map((user) => (
+          {isLoading ? (
+            <div className="rounded-2xl border border-white/55 bg-white/55 p-5 text-sm font-bold text-[#6E8189]">
+              Loading users from backend...
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-sm font-bold text-rose-700">
+              {error}
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="rounded-2xl border border-white/55 bg-white/55 p-5 text-sm font-bold text-[#6E8189]">
+              No users found from the backend yet.
+            </div>
+          ) : filteredUsers.map((user) => (
             <article key={user.id} className="rounded-2xl border border-white/55 bg-white/55 p-4">
               <div className="flex items-start gap-3">
                 <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#0a5d7a]/10 text-xs font-black text-[#0a5d7a]">
@@ -933,7 +1045,25 @@ function UsersPanel({
               </tr>
             </thead>
             <tbody className="divide-y divide-white/55">
-              {filteredUsers.map((user) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm font-bold text-[#6E8189]">
+                    Loading users from backend...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm font-bold text-rose-700">
+                    {error}
+                  </td>
+                </tr>
+              ) : filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm font-bold text-[#6E8189]">
+                    No users found from the backend yet.
+                  </td>
+                </tr>
+              ) : filteredUsers.map((user) => (
                 <tr key={user.id} className="transition hover:bg-white/35">
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -1044,6 +1174,7 @@ export function AdminDashboard() {
   const [serverBookings, setServerBookings] = useState<BackendBooking[]>([]);
   const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
   const [customerComments, setCustomerComments] = useState<CustomerComment[]>([]);
+  const [backendUsers, setBackendUsers] = useState<BackendUser[]>([]);
   const [hiddenPackageIds, setHiddenPackageIds] = useState<number[]>([]);
   const [hiddenDestinationNames, setHiddenDestinationNames] = useState<string[]>([]);
   const [hiddenServiceIds, setHiddenServiceIds] = useState<number[]>([]);
@@ -1057,7 +1188,12 @@ export function AdminDashboard() {
   const [packageDraft, setPackageDraft] = useState<PackageDraft>(defaultPackageDraft);
   const [destinationDraft, setDestinationDraft] = useState<DestinationDraft>(defaultDestinationDraft);
   const [serviceDraft, setServiceDraft] = useState<ServiceDraft>(defaultServiceDraft);
-  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(initialUsers);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
+  const [systemHealthChecked, setSystemHealthChecked] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState("");
+  const [usersLoaded, setUsersLoaded] = useState(false);
   const [userSearch, setUserSearch] = useState("");
   const [userStatusFilter, setUserStatusFilter] = useState<"all" | "Active" | "Blocked">("all");
   const isAdmin = user?.role === "admin" || user?.email === "yamanabuasal20@gmail.com";
@@ -1074,8 +1210,79 @@ export function AdminDashboard() {
     status: booking.status,
     date: new Date(booking.createdAt).toLocaleDateString(),
   }));
+  const totalRevenue = serverBookings.reduce((total, booking) => total + Number(booking.totalPrice || 0), 0);
+  const activeUsersCount = adminUsers.filter((adminUser) => adminUser.status === "Active").length;
+  const dashboardStats = [
+    { label: "Total Bookings", value: serverBookings.length.toLocaleString(), change: "Live", helper: "from backend bookings", icon: CalendarCheck, color: "bg-[#F59E0B]" },
+    { label: "Total Revenue", value: formatMoney(totalRevenue), change: "Live", helper: "from booking totals", icon: CircleDollarSign, color: "bg-[#0a5d7a]" },
+    { label: "Active Users", value: activeUsersCount.toLocaleString(), change: `${adminUsers.length} total`, helper: "from backend users", icon: Users, color: "bg-[#14B8A6]" },
+  ];
+  const systemStatusItems: SystemStatusItem[] = [
+    {
+      label: "Server Status",
+      value: systemHealth ? "Online" : systemHealthChecked ? "Offline" : "Checking",
+      tone: systemHealth ? "emerald" : systemHealthChecked ? "rose" : "amber",
+    },
+    {
+      label: "Database",
+      value: getDatabaseLabel(systemHealth),
+      tone: getDatabaseTone(systemHealth),
+    },
+    {
+      label: "API Response",
+      value: systemHealth?.apiResponseMs ? `${systemHealth.apiResponseMs}ms` : "--",
+      tone: systemHealth?.apiResponseMs ? (systemHealth.apiResponseMs <= 150 ? "emerald" : systemHealth.apiResponseMs <= 400 ? "amber" : "rose") : "amber",
+    },
+  ];
+  const recentActivity: ActivityItem[] = [
+    ...serverBookings
+      .filter((booking) => booking.createdAt)
+      .map((booking) => ({
+        color: "bg-emerald-500",
+        title: `New booking from ${booking.customer?.name || "Guest Customer"}`,
+        time: formatTimeAgo(booking.createdAt),
+        createdAt: booking.createdAt,
+      })),
+    ...contactMessages
+      .filter((message) => message.createdAt)
+      .map((message) => ({
+        color: "bg-[#0a5d7a]",
+        title: `New message from ${message.name}`,
+        time: formatTimeAgo(message.createdAt),
+        createdAt: message.createdAt,
+      })),
+    ...customerComments
+      .filter((comment) => comment.createdAt)
+      .map((comment) => ({
+        color: "bg-[#F59E0B]",
+        title: `New comment by ${comment.name}`,
+        time: formatTimeAgo(comment.createdAt),
+        createdAt: comment.createdAt,
+      })),
+    ...backendUsers
+      .filter((backendUser) => backendUser.createdAt)
+      .map((backendUser) => ({
+        color: "bg-violet-500",
+        title: `New user joined: ${backendUser.name}`,
+        time: formatTimeAgo(backendUser.createdAt),
+        createdAt: backendUser.createdAt!,
+      })),
+  ]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map(({ color, title, time }) => ({ color, title, time }));
 
   useEffect(() => {
+    getSystemHealth()
+      .then((health) => {
+        setSystemHealth(health);
+        setSystemHealthChecked(true);
+      })
+      .catch((error) => {
+        console.error("Failed to load system health", error);
+        setSystemHealth(null);
+        setSystemHealthChecked(true);
+      });
     getAllBookings()
       .then(setServerBookings)
       .catch((error) => {
@@ -1091,7 +1298,49 @@ export function AdminDashboard() {
       .catch((error) => {
         console.error("Failed to load customer comments", error);
       });
+    const loadUsers = async () => {
+      setUsersLoading(true);
+      setUsersError("");
+
+      try {
+        const users = await getAllUsers();
+        setBackendUsers(users);
+        setUsersLoaded(true);
+      } catch (error) {
+        console.error("Failed to load admin users", error);
+
+        if (user?.email === "yamanabuasal20@gmail.com") {
+          try {
+            await loginUser("yamanabuasal20@gmail.com", "123");
+            const users = await getAllUsers();
+            setBackendUsers(users);
+            setUsersLoaded(true);
+            return;
+          } catch (retryError) {
+            console.error("Failed to refresh admin token and load users", retryError);
+            const message = retryError instanceof Error ? retryError.message : "Backend refused the users request.";
+            setUsersError(`Users could not load from backend: ${message}`);
+            setUsersLoaded(true);
+            return;
+          }
+        }
+
+        const message = error instanceof Error ? error.message : "Backend refused the users request.";
+        setUsersError(`Users could not load from backend: ${message}`);
+        setUsersLoaded(true);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+
+    loadUsers();
   }, []);
+
+  useEffect(() => {
+    if (usersLoaded) {
+      setAdminUsers(backendUsers.map((backendUser) => mapBackendUser(backendUser, serverBookings)));
+    }
+  }, [backendUsers, serverBookings, usersLoaded]);
 
   if (!isAdmin) {
     return <Navigate to="/auth" replace />;
@@ -1309,7 +1558,9 @@ export function AdminDashboard() {
       "Rainbow Travel Admin Report",
       `Generated: ${new Date().toLocaleString()}`,
       "",
-      `Total bookings: ${bookingRows.length || bookings.length}`,
+      `Total bookings: ${bookingRows.length}`,
+      `Total users: ${adminUsers.length}`,
+      `Total revenue: ${formatMoney(totalRevenue)}`,
       `Visible packages: ${allPackages.length}`,
       `Admin-added packages: ${adminPackages.length}`,
       `Destinations: ${allDestinations.length}`,
@@ -1326,24 +1577,48 @@ export function AdminDashboard() {
     URL.revokeObjectURL(url);
   };
 
-  const toggleUserStatus = (userId: number) => {
+  const toggleUserStatus = async (userId: string) => {
+    const targetUser = adminUsers.find((adminUser) => adminUser.id === userId);
+    if (!targetUser) {
+      return;
+    }
+
+    const nextStatus = targetUser.status === "Active" ? "Blocked" : "Active";
     setAdminUsers((currentUsers) =>
-      currentUsers.map((adminUser) =>
-        adminUser.id === userId
-          ? { ...adminUser, status: adminUser.status === "Active" ? "Blocked" : "Active" }
-          : adminUser
-      )
+      currentUsers.map((adminUser) => adminUser.id === userId ? { ...adminUser, status: nextStatus } : adminUser)
     );
+
+    try {
+      const updatedUser = await updateBackendUser(userId, { status: nextStatus.toLowerCase() as BackendUser["status"] });
+      setBackendUsers((currentUsers) => currentUsers.map((backendUser) => (backendUser._id || backendUser.id || backendUser.email) === userId ? updatedUser : backendUser));
+    } catch (error) {
+      console.error("Failed to update user status", error);
+      setAdminUsers((currentUsers) =>
+        currentUsers.map((adminUser) => adminUser.id === userId ? { ...adminUser, status: targetUser.status } : adminUser)
+      );
+    }
   };
 
-  const toggleUserRole = (userId: number) => {
+  const toggleUserRole = async (userId: string) => {
+    const targetUser = adminUsers.find((adminUser) => adminUser.id === userId);
+    if (!targetUser) {
+      return;
+    }
+
+    const nextRole = targetUser.role === "admin" ? "user" : "admin";
     setAdminUsers((currentUsers) =>
-      currentUsers.map((adminUser) =>
-        adminUser.id === userId
-          ? { ...adminUser, role: adminUser.role === "admin" ? "user" : "admin" }
-          : adminUser
-      )
+      currentUsers.map((adminUser) => adminUser.id === userId ? { ...adminUser, role: nextRole } : adminUser)
     );
+
+    try {
+      const updatedUser = await updateBackendUser(userId, { role: nextRole });
+      setBackendUsers((currentUsers) => currentUsers.map((backendUser) => (backendUser._id || backendUser.id || backendUser.email) === userId ? updatedUser : backendUser));
+    } catch (error) {
+      console.error("Failed to update user role", error);
+      setAdminUsers((currentUsers) =>
+        currentUsers.map((adminUser) => adminUser.id === userId ? { ...adminUser, role: targetUser.role } : adminUser)
+      );
+    }
   };
 
   return (
@@ -1435,8 +1710,8 @@ export function AdminDashboard() {
 
               {activeSection === "overview" && (
                 <>
-                  <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    {stats.map((stat) => (
+                  <section className="mx-auto grid max-w-5xl gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {dashboardStats.map((stat) => (
                       <article key={stat.label} className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div>
@@ -1448,7 +1723,7 @@ export function AdminDashboard() {
                           </div>
                         </div>
                         <p className="mt-4 text-xs font-bold text-[#6E8189]">
-                          <span className={stat.negative ? "text-rose-500" : "text-emerald-600"}>{stat.change}</span> {stat.helper}
+                          <span className="text-emerald-600">{stat.change}</span> {stat.helper}
                         </p>
                       </article>
                     ))}
@@ -1462,7 +1737,7 @@ export function AdminDashboard() {
                     <article className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                       <h2 className="mb-4 text-xl font-black text-[#162F3A]">Quick Actions</h2>
                       <div className="grid gap-3">
-                        <button type="button" onClick={openAddPackage} className="rounded-xl bg-[#F46C28] px-4 py-3 text-sm font-black text-white shadow-lg shadow-[#F46C28]/20 transition hover:bg-[#DF5C1F]">Add New Package</button>
+                        <button type="button" onClick={openAddPackage} className="overflow-hidden rounded-xl bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-4 py-3 text-sm font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">Add New Package</button>
                         <button type="button" onClick={() => setActiveSection("bookings")} className="rounded-xl bg-white/65 px-4 py-3 text-sm font-black text-[#0a5d7a] transition hover:bg-white">View All Bookings</button>
                         <button type="button" onClick={generateReport} className="rounded-xl bg-white/65 px-4 py-3 text-sm font-black text-[#0a5d7a] transition hover:bg-white">Generate Report</button>
                       </div>
@@ -1471,14 +1746,22 @@ export function AdminDashboard() {
                     <article className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                       <h2 className="mb-4 text-xl font-black text-[#162F3A]">System Status</h2>
                       <div className="space-y-4 text-sm font-bold text-[#31596A]">
-                        {[
-                          ["Server Status", "Online"],
-                          ["Database", "Healthy"],
-                          ["API Response", "45ms"],
-                        ].map(([label, value]) => (
+                        {systemStatusItems.map(({ label, value, tone }) => (
                           <div key={label} className="flex items-center justify-between">
                             <span>{label}</span>
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-200">{value}</span>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${
+                                tone === "emerald"
+                                  ? "bg-emerald-100 text-emerald-700 ring-emerald-200"
+                                  : tone === "sky"
+                                    ? "bg-sky-100 text-sky-700 ring-sky-200"
+                                    : tone === "rose"
+                                      ? "bg-rose-100 text-rose-700 ring-rose-200"
+                                      : "bg-amber-100 text-amber-700 ring-amber-200"
+                              }`}
+                            >
+                              {value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1487,13 +1770,11 @@ export function AdminDashboard() {
                     <article className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                       <h2 className="mb-4 text-xl font-black text-[#162F3A]">Recent Activity</h2>
                       <div className="space-y-4 text-sm">
-                        {[
-                          ["bg-emerald-500", "New booking received", "7 minutes ago"],
-                          ["bg-[#0a5d7a]", "Package updated", "1 hour ago"],
-                          ["bg-[#F59E0B]", "Payment processed", "3 hours ago"],
-                        ].map(([dot, title, time]) => (
+                        {recentActivity.length === 0 ? (
+                          <p className="text-sm font-bold text-[#6E8189]">No recent backend activity yet.</p>
+                        ) : recentActivity.map(({ color, title, time }) => (
                           <div key={title} className="flex gap-3">
-                            <span className={`mt-1.5 h-2.5 w-2.5 rounded-full ${dot}`} />
+                            <span className={`mt-1.5 h-2.5 w-2.5 rounded-full ${color}`} />
                             <div>
                               <p className="font-black text-[#193945]">{title}</p>
                               <p className="text-xs font-semibold text-[#6E8189]">{time}</p>
@@ -1512,7 +1793,7 @@ export function AdminDashboard() {
                 <section className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                   <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-xl font-black text-[#162F3A]">Packages</h2>
-                    <button type="button" onClick={openAddPackage} className="rounded-full bg-[#F46C28] px-4 py-2 text-xs font-black text-white shadow-lg shadow-[#F46C28]/20">Add Package</button>
+                    <button type="button" onClick={openAddPackage} className="overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-4 py-2 text-xs font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">Add Package</button>
                   </div>
                   {isAddPackageOpen && (
                     <AddPackageForm
@@ -1593,7 +1874,7 @@ export function AdminDashboard() {
                 <section className="rounded-2xl border border-white/50 bg-white/42 p-4 shadow-[0_18px_50px_rgba(10,93,122,0.1)] backdrop-blur-2xl sm:p-5">
                   <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <h2 className="text-xl font-black text-[#162F3A]">Services</h2>
-                    <button type="button" onClick={() => setIsAddServiceOpen(true)} className="rounded-full bg-[#F46C28] px-4 py-2 text-xs font-black text-white shadow-lg shadow-[#F46C28]/20">Add Service</button>
+                    <button type="button" onClick={() => setIsAddServiceOpen(true)} className="overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-4 py-2 text-xs font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">Add Service</button>
                   </div>
                   {isAddServiceOpen && (
                     <AddServiceForm
@@ -1672,6 +1953,8 @@ export function AdminDashboard() {
               {activeSection === "users" && (
                 <UsersPanel
                   users={adminUsers}
+                  isLoading={usersLoading}
+                  error={usersError}
                   search={userSearch}
                   statusFilter={userStatusFilter}
                   onSearchChange={setUserSearch}

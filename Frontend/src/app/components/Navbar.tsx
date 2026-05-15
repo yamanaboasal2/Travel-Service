@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { useLanguage } from "../contexts/LanguageContext";
 import logo from "../../assets/logo.ico";
@@ -12,6 +13,20 @@ export function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
   const languageLabel = language === "ar" ? "English" : "\u0627\u0644\u0639\u0631\u0628\u064a\u0629";
+  const heroButtonClass =
+    "group relative overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] hover:scale-[1.03]";
+
+  const renderHeroButtonContent = (label: string) => (
+    <>
+      <motion.span
+        className="absolute inset-y-0 -left-1/3 w-2/3 rounded-full bg-gradient-to-r from-transparent via-[#0a5d7a]/70 to-transparent blur-sm"
+        animate={{ x: ["-35%", "210%", "-35%"] }}
+        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <span className="absolute inset-0 bg-gradient-to-b from-white/18 via-transparent to-[#021427]/18 opacity-80" />
+      <span className="relative z-10">{label}</span>
+    </>
+  );
 
   const navLinks = [
     { labelKey: "home", path: "/" },
@@ -59,17 +74,17 @@ export function Navbar() {
 
           <div className="hidden lg:flex items-center gap-2 xl:gap-3">
             <Link to="/auth">
-              <Button className="rounded-full bg-gradient-to-r from-[#F59E0B] to-orange-500 hover:from-[#e39700] hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 py-2 h-9 text-xs xl:text-sm whitespace-nowrap">
-                {t("loginSignup")}
+              <Button className={`${heroButtonClass} h-9 px-4 py-2 text-xs whitespace-nowrap xl:text-sm`}>
+                {renderHeroButtonContent(t("loginSignup"))}
               </Button>
             </Link>
 
             <Button
               onClick={toggleLanguage}
               aria-label={language === "ar" ? "Switch to English" : "\u0627\u0644\u062a\u0628\u062f\u064a\u0644 \u0625\u0644\u0649 \u0627\u0644\u0639\u0631\u0628\u064a\u0629"}
-              className="rounded-full bg-gradient-to-r from-[#F59E0B] to-orange-500 hover:from-[#e39700] hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all px-4 py-2 h-9 text-xs xl:text-sm whitespace-nowrap"
+              className={`${heroButtonClass} h-9 px-4 py-2 text-xs whitespace-nowrap xl:text-sm`}
             >
-              {languageLabel}
+              {renderHeroButtonContent(languageLabel)}
             </Button>
           </div>
 
@@ -99,8 +114,8 @@ export function Navbar() {
             ))}
 
             <Link to="/auth" onClick={() => setIsOpen(false)}>
-              <Button className="w-full rounded-full bg-gradient-to-r from-[#F59E0B] to-orange-500 hover:from-[#e39700] hover:to-orange-600 text-white font-semibold">
-                {t("loginSignup")}
+              <Button className={`${heroButtonClass} w-full`}>
+                {renderHeroButtonContent(t("loginSignup"))}
               </Button>
             </Link>
 
@@ -110,9 +125,9 @@ export function Navbar() {
                 setIsOpen(false);
               }}
               aria-label={language === "ar" ? "Switch to English" : "\u0627\u0644\u062a\u0628\u062f\u064a\u0644 \u0625\u0644\u0649 \u0627\u0644\u0639\u0631\u0628\u064a\u0629"}
-              className="w-full rounded-full bg-gradient-to-r from-[#F59E0B] to-orange-500 hover:from-[#e39700] hover:to-orange-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+              className={`${heroButtonClass} w-full`}
             >
-              {languageLabel}
+              {renderHeroButtonContent(languageLabel)}
             </Button>
           </div>
         )}

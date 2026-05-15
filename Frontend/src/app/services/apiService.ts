@@ -1,6 +1,6 @@
 // API Service Configuration
 // Base URL is built from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000/api' : '/api');
 
 console.log('═══════════════════════════════════════════');
 console.log('[API Service] Initialized');
@@ -15,6 +15,17 @@ export interface ApiResponse<T> {
   message?: string;
   token?: string;
   user?: any;
+}
+
+export interface SystemHealth {
+  message: string;
+  timestamp: string;
+  environment: string;
+  database?: {
+    status: "connected" | "connecting" | "disconnected" | "disconnecting";
+    healthy: boolean;
+  };
+  apiResponseMs?: number;
 }
 
 // Generic request helper with error handling
@@ -156,9 +167,77 @@ export async function getCurrentUser() {
   });
 }
 
+export async function requestPasswordReset(email: string) {
+  return apiRequest<{
+    message: string;
+    resetToken: string;
+  }>('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, password: string) {
+  const response = await apiRequest<{
+    message: string;
+    token: string;
+    user: { id: string; name: string; email: string; role: string; status?: string };
+  }>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+  });
+
+  if (response.token) {
+    localStorage.setItem('authToken', response.token);
+    localStorage.setItem('user', JSON.stringify(response.user));
+  }
+
+  return response;
+}
+
 export function logoutUser() {
   localStorage.removeItem('authToken');
   localStorage.removeItem('user');
+}
+
+// ============ USERS ENDPOINTS ============
+
+export interface AdminUserRecord {
+  _id: string;
+  id?: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+  phone?: string;
+  status?: 'active' | 'blocked';
+  lastLoginAt?: string | null;
+  createdAt?: string;
+}
+
+export async function getAllUsers() {
+  const response = await apiRequest<{
+    data: AdminUserRecord[];
+    count: number;
+    message: string;
+  }>('/users', { method: 'GET' });
+
+  return response.data || [];
+}
+
+export async function updateUser(id: string, payload: Partial<AdminUserRecord> & { password?: string }) {
+  const response = await apiRequest<{
+    data: AdminUserRecord;
+    message: string;
+  }>(`/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return response.data;
+}
+
+export async function deleteUser(id: string) {
+  return apiRequest<{ message: string }>(`/users/${id}`, { method: 'DELETE' });
 }
 
 // ============ SERVICES ENDPOINTS ============
@@ -561,6 +640,17 @@ export async function updateComment(id: string, payload: Partial<CustomerComment
 
 export async function deleteComment(id: string) {
   return apiRequest<{ message: string }>(`/comments/${id}`, { method: 'DELETE' });
+}
+
+export async function getSystemHealth() {
+  const startedAt = performance.now();
+  const response = await apiRequest<SystemHealth>('/health', { method: 'GET' });
+  const apiResponseMs = Math.round(performance.now() - startedAt);
+
+  return {
+    ...response,
+    apiResponseMs,
+  };
 }
 
 // ============ UTILITY FUNCTIONS ============

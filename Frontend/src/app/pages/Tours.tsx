@@ -3,7 +3,7 @@ import { Calendar, MapPin, Users, Star } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { ProtectedBookingLink } from "../components/ProtectedBookingLink";
 import heroBg from "../../assets/h1-bg01.jpg";
 
 const wavyButtonStyle = `
@@ -334,11 +334,11 @@ export function Tours() {
               whileTap={{ scale: 0.98 }}
               className="flex justify-center"
             >
-              <Link to="/booking" className="w-full">
+              <ProtectedBookingLink className="w-full">
                 <Button className="wavy-btn w-full rounded-xl text-white px-10 py-3 text-base font-bold shadow-xl hover:shadow-2xl transition-all duration-300 border-b-4 border-[#F59E0B] bg-gradient-to-r from-[#0a5d7a] via-[#F59E0B] to-[#1a3a52] uppercase tracking-wide" style={{ backgroundSize: '200% 200%' }}>
                   Book This Tour
                 </Button>
-              </Link>
+              </ProtectedBookingLink>
             </motion.div>
           </motion.div>
         </div>

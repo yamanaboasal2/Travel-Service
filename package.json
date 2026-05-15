@@ -1,0 +1,13 @@
+{
+  "name": "travel-service-website",
+  "private": true,
+  "workspaces": [
+    "Frontend",
+    "Backend"
+  ],
+  "scripts": {
+    "build": "npm --prefix Frontend run build",
+    "build:frontend": "npm --prefix Frontend run build",
+    "build:backend": "npm --prefix Backend run build"
+  }
+}

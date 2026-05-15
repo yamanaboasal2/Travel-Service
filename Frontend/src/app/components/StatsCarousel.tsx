@@ -6,6 +6,7 @@ import avatar3 from '../../assets/h1-avatar-3.jpg';
 import avatar4 from '../../assets/h1-avatar-4.jpg';
 import pg02 from '../../assets/h1-bg02.jpg';
 import { useLanguage } from "../contexts/LanguageContext";
+import { Link } from "react-router-dom";
 
 export default function StatsCarousel() {
   const { t } = useLanguage();
@@ -159,18 +160,19 @@ export default function StatsCarousel() {
               {t("travelStatsDesc")}
             </motion.p>
 
-            <motion.button
-              className="inline-flex items-center gap-3 rounded-full border border-orange-500/60 bg-orange-500 px-6 py-3 text-sm font-semibold text-white shadow-2xl shadow-orange-500/40 transition-transform hover:bg-orange-600"
-              whileHover={{ scale: 1.04, x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.24 }}
-              viewport={{ once: true }}
-            >
-              {t("aboutUs")}
-              <ArrowRight className="h-4 w-4" />
-            </motion.button>
+            <motion.div
+                whileHover={{ scale: 1.04, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.24 }}
+                viewport={{ once: true }}
+              >
+              <Link to="/about" className="inline-flex items-center justify-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">
+                {t("aboutUs")}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:gap-6">

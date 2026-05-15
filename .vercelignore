@@ -1,0 +1,11 @@
+.git
+.vercel
+Backend/dist
+Frontend/dist
+**/*.log
+CORRECTED_CODE.md
+DEPLOYMENT_CHECKLIST.md
+FIXES_APPLIED.md
+FRONTEND_REGISTRATION_FIX.md
+QUICK_START.md
+READY_TO_TEST.md

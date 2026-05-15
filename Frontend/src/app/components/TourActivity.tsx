@@ -108,7 +108,7 @@ export default function TourActivity() {
               onClick={() => setActiveRegion(region.name)}
               className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 relative overflow-hidden group ${
                 activeRegion === region.name
-                  ? "bg-orange-500 text-white shadow-lg scale-105"
+                  ? "overflow-hidden bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] scale-105"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
               whileHover={{ scale: 1.05 }}
@@ -187,13 +187,9 @@ export default function TourActivity() {
                 </p>
 
                 {/* Button */}
-                <motion.button
-                  className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-semibold hover:from-orange-600 hover:to-orange-700 transition-all"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
+                <button className="w-full overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] py-3 font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)]">
                   Explore Now
-                </motion.button>
+                </button>
               </div>
 
               {/* Corner accent */}

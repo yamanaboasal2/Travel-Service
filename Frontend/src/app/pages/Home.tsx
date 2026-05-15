@@ -5,7 +5,6 @@ import CompanyOverview from "../components/CompanyOverview";
 import DestinationCarousel from "../components/DestinationCarousel";
 import StatsCarousel from "../components/StatsCarousel";
 import ServicesShowcase from "../components/ServicesShowcase";
-import { ParallaxShowcase } from "../components/ParallaxShowcase";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2, MapPin, BadgeCheck } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -39,10 +38,9 @@ export function Home() {
   return (
     <div className="relative isolate min-h-screen overflow-hidden" dir="ltr">
       <div
-        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat md:bg-fixed"
         style={{
           backgroundImage: `url(${bg})`,
-          backgroundAttachment: "fixed",
         }}
       />
       <div className="relative z-10">
@@ -52,10 +50,10 @@ export function Home() {
         <DestinationCarousel />
         <StatsCarousel />
         <Marquee />
-        <section className="relative w-full overflow-hidden bg-white py-10 pl-0 pr-6 lg:pr-14">
-          <div className="relative grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative w-full overflow-hidden bg-white px-4 py-12 sm:px-6 lg:py-14 lg:pl-0 lg:pr-14">
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
             <motion.div
-              className="relative flex items-center justify-start"
+              className="relative flex items-center justify-center lg:justify-start"
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9 }}
@@ -64,12 +62,12 @@ export function Home() {
               <img
                 src={banner7}
                 alt="Travel collage"
-                className="ml-0 mr-auto w-full max-w-[700px] select-none object-contain"
+                className="mx-auto w-full max-w-[520px] select-none object-contain sm:max-w-[620px] lg:ml-0 lg:mr-auto lg:max-w-[700px]"
               />
             </motion.div>
 
             <motion.div
-              className="relative lg:pl-8"
+              className="relative text-center lg:pl-8 lg:text-left"
               initial={{ opacity: 0, x: 34 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9 }}
@@ -78,20 +76,20 @@ export function Home() {
               <motion.img
                 src={deco5}
                 alt="decorative birds"
-                className="absolute -top-4 -left-16 w-24 opacity-75"
+                className="absolute -left-2 -top-10 hidden w-16 opacity-75 sm:block lg:-left-16 lg:-top-4 lg:w-24"
                 animate={{ y: [0, -6, 0], rotate: [0, 3, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
               />
 
               <p
-                className="mb-4 text-[15px] font-medium italic tracking-wide text-orange-500"
+                className="mb-4 text-sm font-medium italic tracking-wide text-orange-500 md:text-[15px]"
                 style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               >
                 {t("letsGoTogether")}
               </p>
 
               <h2
-                className="max-w-xl text-5xl font-black leading-[1.02] text-slate-900 lg:text-6xl"
+                className="mx-auto max-w-xl text-3xl font-black leading-[1.06] text-slate-900 sm:text-4xl lg:mx-0 lg:text-6xl"
                 style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               >
                 {t("bringingTravel")}
@@ -102,31 +100,31 @@ export function Home() {
               <motion.img
                 src={deco4}
                 alt="decorative compass"
-                className="mt-5 w-14 opacity-75"
+                className="mx-auto mt-5 w-12 opacity-75 lg:mx-0 lg:w-14"
                 animate={{ rotate: [0, 8, 0], y: [0, -4, 0] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
               />
 
-              <p className="mt-8 max-w-xl text-sm leading-7 text-slate-500 md:text-[15px]">
+              <p className="mx-auto mt-6 max-w-xl text-sm leading-7 text-slate-500 md:text-[15px] lg:mx-0 lg:mt-8">
                 {t("journeyDesc")}
               </p>
 
-              <div className="mt-10 space-y-7">
+              <div className="mx-auto mt-8 max-w-xl space-y-6 text-left lg:mx-0 lg:mt-10 lg:space-y-7">
                 {travelSteps.map((item, index) => {
                   const Icon = item.icon;
 
                   return (
-                    <div key={item.title} className="relative flex items-start gap-4">
+                    <div key={item.title} className="relative flex items-start gap-3 sm:gap-4">
                       {index < 2 ? (
-                        <div className="absolute left-5 top-12 h-12 w-px border-l border-dashed border-orange-200" />
+                        <div className="absolute left-[18px] top-11 h-10 w-px border-l border-dashed border-orange-200 sm:left-5 sm:top-12 sm:h-12" />
                       ) : null}
 
-                      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/25">
-                        <Icon className="h-5 w-5" />
+                      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg shadow-orange-500/25 sm:h-10 sm:w-10">
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
 
                       <div>
-                        <h3 className="text-[22px] font-semibold leading-none text-slate-900" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+                        <h3 className="text-xl font-semibold leading-none text-slate-900 sm:text-[22px]" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
                           {item.title}
                         </h3>
                         <p className="mt-2 max-w-lg text-sm leading-7 text-slate-500">
@@ -138,15 +136,15 @@ export function Home() {
                 })}
               </div>
 
-              <div className="mt-10 flex items-center gap-4">
-                <Link to="/contact" className="inline-flex items-center gap-3 rounded-full bg-orange-500 px-8 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-600 hover:scale-[1.02]">
+              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:mt-10 lg:justify-start">
+                <Link to="/contact" className="inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-8 py-3 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] sm:w-auto">
                   {t("contactUs")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <motion.img
                   src={deco6}
                   alt="decorative plane path"
-                  className="w-28 opacity-90"
+                  className="w-24 opacity-90 sm:w-28"
                   animate={{ x: [0, 6, 0], y: [0, -4, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 />
@@ -156,7 +154,6 @@ export function Home() {
         </section>
         <Marquee />
         <ServicesShowcase />
-        <ParallaxShowcase />
       </div>
     </div>
   );

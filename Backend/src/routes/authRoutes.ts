@@ -29,6 +29,25 @@ router.post(
   authController.login
 );
 
+router.post(
+  '/forgot-password',
+  [
+    body('email').isEmail().withMessage('Valid email is required')
+  ],
+  validationErrorHandler,
+  authController.forgotPassword
+);
+
+router.post(
+  '/reset-password',
+  [
+    body('token').notEmpty().withMessage('Reset token is required'),
+    body('password').isLength({ min: 3 }).withMessage('Password must be at least 3 characters')
+  ],
+  validationErrorHandler,
+  authController.resetPassword
+);
+
 // Get current user
 router.get('/me', protect, authController.getCurrentUser);
 

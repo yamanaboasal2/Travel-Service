@@ -10,22 +10,21 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import Marquee from "../components/Marquee";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Button } from "../components/ui/button";
 import aboutBanner1 from "../../assets/about-banner-1.jpg";
 import aboutBanner2 from "../../assets/about-banner-2.jpg";
 import aboutBanner3 from "../../assets/about-banner-3.jpg";
 import teamLead from "../../assets/ourteam.jpg";
 import heroBg from "../../assets/h1-bg01.jpg";
 
-const team = [
-  { name: "ربيع عليوي", role: "Director", image: teamLead, note: "Leads the vision and mission of exceptional travel experiences." },
-];
-
 export function About() {
   const { t, flexDirection } = useLanguage();
+  const team = [
+    { name: t("teamLeadName"), role: t("teamLeadRole"), image: teamLead, note: t("teamLeadNote") },
+  ];
   const values = [
     {
       icon: Award,
@@ -62,51 +61,50 @@ export function About() {
 
   return (
     <div 
-      className="min-h-screen bg-cover bg-center bg-fixed"
+      className="min-h-screen bg-cover bg-center md:bg-fixed"
       style={{
         backgroundImage: `url(${heroBg})`,
-        backgroundAttachment: 'fixed',
       }}
     >
       {/* About Us Title Section */}
-      <section className="py-32 relative overflow-hidden">
+      <section className="relative overflow-hidden py-20 sm:py-24 md:py-28 lg:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-[#000816]/85 via-[#021427]/70 to-[#F59E0B]/15 z-0" />
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 
-            className="text-6xl md:text-7xl font-black mb-4 drop-shadow-lg"
+            className="mb-4 text-4xl font-black drop-shadow-lg sm:text-5xl md:text-6xl lg:text-7xl"
             style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '-0.02em' }}
           >
             <span className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-transparent">
-              About Us
+              {t("aboutUs")}
             </span>
           </h1>
-          <p className="text-2xl md:text-3xl text-white/85 font-light max-w-2xl mx-auto drop-shadow-lg" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-            Know Us Better, Plan Your Journey Wisely
+          <p className="mx-auto max-w-2xl text-lg font-light text-white/85 drop-shadow-lg sm:text-xl md:text-2xl lg:text-3xl" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+            {t("aboutHeroSubtitle")}
           </p>
         </div>
       </section>
 
       {/* Why Choose Us Section - screenshot style */}
-      <section className="relative overflow-hidden bg-[#fbf8f1] py-24 lg:py-28">
+      <section className="relative overflow-hidden bg-[#fbf8f1] py-16 sm:py-20 lg:py-28">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_18%_22%,rgba(245,158,11,0.10),transparent_26%),radial-gradient(circle_at_78%_16%,rgba(2,20,39,0.08),transparent_22%),radial-gradient(circle_at_70%_82%,rgba(2,20,39,0.06),transparent_18%)]" />
         </div>
 
         <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-6 items-center">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-6">
             {/* Images Left */}
             <div className="lg:col-span-6">
-              <div className="grid grid-cols-12 gap-4 lg:gap-5 items-stretch max-w-3xl mx-auto lg:mx-0">
+              <div className="mx-auto grid max-w-3xl grid-cols-12 items-stretch gap-3 sm:gap-4 lg:mx-0 lg:gap-5">
                 <motion.div
-                  className="col-span-6 row-span-2 min-h-[27rem] lg:min-h-[30rem] overflow-hidden bg-transparent shadow-none"
+                  className="col-span-6 row-span-2 min-h-[18rem] overflow-hidden bg-transparent shadow-none sm:min-h-[22rem] lg:min-h-[30rem]"
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
                   whileHover={{ scale: 1.02 }}
                 >
                   <img
                     src={aboutBanner1}
-                    alt="Travel destination"
+                    alt={t("travelDestinationAlt")}
                     className="h-full w-full object-cover rounded-[44%_44%_10%_46%]"
                   />
                 </motion.div>
@@ -119,8 +117,8 @@ export function About() {
                 >
                   <img
                     src={aboutBanner2}
-                    alt="Adventure experience"
-                    className="h-[13.5rem] lg:h-[14.5rem] w-full object-cover rounded-full"
+                    alt={t("adventureExperienceAlt")}
+                    className="h-36 w-full rounded-full object-cover sm:h-44 lg:h-[14.5rem]"
                   />
                 </motion.div>
 
@@ -132,8 +130,8 @@ export function About() {
                 >
                   <img
                     src={aboutBanner3}
-                    alt="Cultural tour"
-                    className="h-[13.5rem] lg:h-[14.5rem] w-full object-cover rounded-full"
+                    alt={t("culturalTourAlt")}
+                    className="h-36 w-full rounded-full object-cover sm:h-44 lg:h-[14.5rem]"
                   />
                 </motion.div>
               </div>
@@ -141,60 +139,60 @@ export function About() {
 
             {/* Content Right */}
             <div className="lg:col-span-6 lg:pl-3 xl:pl-6">
-              <div className="max-w-xl">
+              <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
                 <p
                   className="text-[#F59E0B] text-base md:text-lg mb-3"
                   style={{ fontFamily: "'Lora', 'Georgia', serif" }}
                 >
-                  Let&apos;s Go Together
+                  {t("letsGoTogether")}
                 </p>
 
                 <h2
-                  className="text-[#021427] text-4xl md:text-5xl lg:text-[3.8rem] leading-[0.96] font-black tracking-[-0.04em]"
+                  className="text-3xl font-black leading-[1.02] tracking-[-0.04em] text-[#021427] sm:text-4xl md:text-5xl lg:text-[3.8rem] lg:leading-[0.96]"
                   style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
                 >
-                  Plan Your Trip
+                  {t("planYourTrip")}
                   <br />
-                  With Us
+                  {t("withUs")}
                 </h2>
 
                 <p
-                  className="text-sm md:text-base text-[#5f6675] leading-7 max-w-lg"
+                  className="mx-auto max-w-lg text-sm leading-7 text-[#5f6675] md:text-base lg:mx-0"
                   style={{ fontFamily: "'Lora', 'Georgia', serif" }}
                 >
-                  There are many variations of passages of available but the majority have suffered alteration in some form, by injected humour randomised words which don&apos;t look even slightly.
+                  {t("aboutPlanningDesc")}
                 </p>
 
-                <div className="mt-8 space-y-5 max-w-lg">
-                  <div className="flex items-start gap-4">
+                <div className="mx-auto mt-8 max-w-lg space-y-5 lg:mx-0">
+                  <div className="flex items-start gap-4 text-left">
                     <span className="mt-2 h-3 w-3 rounded-full bg-[#F59E0B] shadow-[0_0_0_6px_rgba(245,158,11,0.12)]" />
                     <div>
                       <h4 className="text-xl md:text-2xl text-[#021427] mb-1.5" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-                        Exclusive Trip
+                        {t("exclusiveTrip")}
                       </h4>
                       <p className="text-[#6b7280] text-sm md:text-base leading-7" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        {t("exclusiveTripDesc")}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 text-left">
                     <span className="mt-2 h-3 w-3 rounded-full bg-[#F59E0B] shadow-[0_0_0_6px_rgba(245,158,11,0.12)]" />
                     <div>
                       <h4 className="text-xl md:text-2xl text-[#021427] mb-1.5" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-                        Professional Guide
+                        {t("professionalGuide")}
                       </h4>
                       <p className="text-[#6b7280] text-sm md:text-base leading-7" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        {t("professionalGuideDesc")}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-8 flex justify-center lg:justify-start">
                   <Link to="/contact">
-                    <Button className="bg-[#F59E0B] hover:bg-[#ea8f06] text-white px-7 py-5 rounded-full text-base font-semibold transition-all duration-300 shadow-lg shadow-[#F59E0B]/20">
-                      Contact Us →
+                    <Button className="overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-6 py-4 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] sm:px-7 sm:py-5 sm:text-base">
+                      {t("Contact Us")} →
                     </Button>
                   </Link>
                 </div>
@@ -205,23 +203,23 @@ export function About() {
       </section>
 
       {/* Our Story Section */}
-      <section className="py-32 relative overflow-hidden">
+      <section className="relative overflow-hidden py-20 sm:py-24 md:py-28 lg:py-32">
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#000816]/85 via-[#021427]/70 to-[#F59E0B]/15 z-0" />
         
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 
-            className="text-6xl md:text-7xl font-black mb-8 leading-tight drop-shadow-lg"
+            className="mb-6 text-4xl font-black leading-tight drop-shadow-lg sm:text-5xl md:mb-8 md:text-6xl lg:text-7xl"
             style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '-0.01em' }}
           >
             <span className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-transparent">
-              Our Story
+              {t("ourStory")}
             </span>
           </h2>
 
           <div className="relative">
             {/* Decorative wavy elements */}
-            <svg className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-2xl h-24 opacity-30 z-0" viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute left-1/2 top-0 z-0 h-16 w-full max-w-2xl -translate-x-1/2 opacity-30 sm:-top-12 sm:h-24" viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0,40 Q300,20 600,40 T1200,40 L1200,80 L0,80 Z" fill="url(#waveGradient1)" />
               <defs>
                 <linearGradient id="waveGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -232,12 +230,12 @@ export function About() {
               </defs>
             </svg>
 
-            <p className="relative z-10 text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed font-light" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-              Rainbow Travel & Tourism was founded with a simple yet powerful vision: to make travel accessible, enjoyable, and memorable for everyone. Located in the heart of Nablus at Nablus City Center, second floor, we have become a trusted name in the travel industry.
+            <p className="relative z-10 mx-auto max-w-3xl text-base font-light leading-relaxed text-white/95 sm:text-lg md:text-xl lg:text-2xl" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+              {t("aboutStoryMain")}
             </p>
 
             {/* Another wavy element */}
-            <svg className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-full max-w-2xl h-24 opacity-30 z-0" viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <svg className="absolute bottom-0 left-1/2 z-0 h-16 w-full max-w-2xl -translate-x-1/2 opacity-30 sm:-bottom-12 sm:h-24" viewBox="0 0 1200 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0,40 Q300,60 600,40 T1200,40 L1200,0 L0,0 Z" fill="url(#waveGradient2)" />
               <defs>
                 <linearGradient id="waveGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -248,33 +246,33 @@ export function About() {
               </defs>
             </svg>
 
-            <p className="relative z-10 text-lg text-white/85 max-w-2xl mx-auto mt-12 leading-relaxed font-light" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-              Our journey began with a passion for exploration and a commitment to excellence. Over the years, we have helped thousands of travelers discover the world, creating memories that last a lifetime.
+            <p className="relative z-10 mx-auto mt-8 max-w-2xl text-sm font-light leading-relaxed text-white/85 sm:mt-10 sm:text-base lg:mt-12 lg:text-lg" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+              {t("aboutStorySecond")}
             </p>
           </div>
         </div>
       </section>
 
       {/* Our Team Section */}
-      <section className="relative overflow-hidden py-5 md:py-6">
+      <section className="relative overflow-hidden py-8 sm:py-10 md:py-6">
         <div className="absolute inset-0 bg-white/20 backdrop-blur-sm" />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
-            <p className="text-sm uppercase tracking-[0.35em] text-white">Our Team</p>
-            <h2 className="mt-4 text-4xl md:text-5xl font-black text-[#021427]" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
-              The people behind the journey
+        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto mb-8 max-w-3xl text-center">
+            <p className="text-sm uppercase tracking-[0.35em] text-white">{t("ourTeam")}</p>
+            <h2 className="mt-3 text-3xl md:text-4xl font-black text-[#021427]" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+              {t("teamTitle")}
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm md:text-base leading-7 text-white" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-              Our team blends destination knowledge, planning discipline, and friendly support to keep every trip smooth from start to finish.
+            <p className="mx-auto mt-3 max-w-xl text-sm md:text-base leading-7 text-white" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+              {t("teamDesc")}
             </p>
           </div>
 
           <motion.div className="flex justify-center" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0 }} viewport={{ once: true }}>
             <div className="text-center">
               {/* Decorative arc above image */}
-              <div className="mb-8 flex justify-center">
-                <div className="relative w-72 h-12 pointer-events-none">
+              <div className="mb-5 flex justify-center">
+                <div className="relative h-8 w-44 pointer-events-none sm:h-10 sm:w-60">
                   <svg viewBox="0 0 320 64" className="w-full h-full" preserveAspectRatio="none">
                     <path d="M 10 64 Q 160 -15 310 64" fill="none" stroke="#8D6E63" strokeWidth="2.5" opacity="0.5" />
                   </svg>
@@ -282,24 +280,24 @@ export function About() {
               </div>
 
               {/* Circular Image */}
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center mb-5">
                 <div className="relative">
                   <img 
                     src={team[0].image} 
                     alt={team[0].name} 
-                    className="h-56 w-56 rounded-full object-cover border-4 border-white/70 shadow-[0_20px_60px_rgba(80,52,31,0.15)]" 
+                    className="h-36 w-36 rounded-full object-cover border-4 border-white/70 shadow-[0_20px_60px_rgba(80,52,31,0.15)] sm:h-44 sm:w-44 md:h-48 md:w-48" 
                   />
                 </div>
               </div>
 
               {/* Text Content - Below Image */}
-              <div className="max-w-sm relative z-10">
-                <div className="flex items-center justify-center gap-2 text-white mb-3">
+              <div className="relative z-10 max-w-xs px-2 sm:px-0">
+                <div className="flex items-center justify-center gap-2 text-white mb-2">
                   <Users className="h-4 w-4" />
                   <span className="text-sm font-semibold uppercase tracking-[0.3em]">{team[0].role}</span>
                 </div>
-                <h3 className="text-4xl font-black text-[#3E2723]" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>{team[0].name}</h3>
-                <p className="mt-4 text-base leading-7 text-white" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>{team[0].note}</p>
+                <h3 className="text-2xl font-black text-[#3E2723] sm:text-3xl" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>{team[0].name}</h3>
+                <p className="mt-3 text-sm leading-7 text-white" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>{team[0].note}</p>
               </div>
             </div>
           </motion.div>
@@ -307,18 +305,18 @@ export function About() {
       </section>
 
       {/* Marquee Divider */}
-      <section className="relative py-5 overflow-hidden bg-gradient-to-r from-[#000816] via-[#021427] to-[#000816]">
+      <section className="relative overflow-hidden bg-gradient-to-r from-[#000816] via-[#021427] to-[#000816] py-4 sm:py-5">
         <div className="relative">
           <Marquee>
-            <div className="text-white text-xl font-semibold mx-6 drop-shadow-md" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '0.05em' }}>
-              ✨ EXPLORE THE WORLD WITH US ✨ EXPLORE THE WORLD WITH US ✨ EXPLORE THE WORLD WITH US ✨
+            <div className="mx-4 text-base font-semibold text-white drop-shadow-md sm:mx-6 sm:text-xl" style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '0.05em' }}>
+              {t("aboutMarqueeText")}
             </div>
           </Marquee>
         </div>
       </section>
 
       {/* Core Values - Enhanced Section */}
-      <section className="relative py-16 overflow-hidden bg-white">
+      <section className="relative overflow-hidden bg-white py-14 sm:py-16">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-20 left-10 w-64 h-64 bg-[#F59E0B] rounded-full blur-3xl" />
@@ -327,22 +325,22 @@ export function About() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Header */}
-          <div className="text-center mb-12">
+          <div className="mb-10 text-center sm:mb-12">
             <h2 
-              className="text-4xl md:text-5xl font-black mb-4"
+              className="mb-4 text-3xl font-black sm:text-4xl md:text-5xl"
               style={{ fontFamily: "'Playfair Display', 'Georgia', serif", letterSpacing: '-0.01em' }}
             >
               <span className="bg-gradient-to-r from-[#2C4A7C] via-[#F59E0B] to-[#2C4A7C] bg-clip-text text-transparent">
                 {t('ourCoreValues')}
               </span>
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto font-light" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
-              The principles that guide every decision and action we take
+            <p className="mx-auto max-w-2xl text-base font-light text-gray-600 sm:text-lg" style={{ fontFamily: "'Lora', 'Georgia', serif" }}>
+              {t("coreValuesDesc")}
             </p>
           </div>
 
           {/* Values Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-3 lg:gap-8">
             {[
               {
                 icon: Users,
@@ -370,7 +368,7 @@ export function About() {
               return (
                 <div
                   key={index}
-                  className="group relative bg-white rounded-2xl p-6 md:p-8 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-200 hover:border-gray-300 overflow-hidden hover:-translate-y-2"
+                  className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-md transition-all duration-500 hover:-translate-y-2 hover:border-gray-300 hover:shadow-2xl sm:p-6 md:p-8"
                 >
                   {/* Card overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-br from-white to-gray-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -388,8 +386,8 @@ export function About() {
 
                     {/* Icon Container */}
                     <div className="mb-4">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center group-hover:shadow-lg group-hover:scale-110 transition-all duration-500">
-                        <Icon className="w-7 h-7 text-white" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-400 to-gray-600 transition-all duration-500 group-hover:scale-110 group-hover:shadow-lg sm:h-14 sm:w-14">
+                        <Icon className="h-6 w-6 text-white sm:h-7 sm:w-7" />
                       </div>
                     </div>
 
@@ -407,8 +405,7 @@ export function About() {
                     </p>
 
                     {/* Hover arrow */}
-                    <div className="mt-4 flex items-center gap-2 text-[#F59E0B] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <span className="text-xs font-semibold">Learn More</span>
+                    <div className="hidden">
                       <span className="transform group-hover:translate-x-2 transition-transform duration-500">→</span>
                     </div>
                   </div>
@@ -423,9 +420,8 @@ export function About() {
       </section>
 
       {/* Location Info + CTA Combined Section */}
-      <section className="relative overflow-hidden bg-cover bg-center" style={{
+      <section className="relative overflow-hidden bg-cover bg-center md:bg-fixed" style={{
         backgroundImage: `url(${heroBg})`,
-        backgroundAttachment: 'fixed'
       }}>
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black/35 z-0" />
@@ -435,12 +431,12 @@ export function About() {
         <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-gray-100 to-transparent z-20" />
 
         {/* Decorative elements */}
-        <div className="absolute top-1/4 right-10 w-80 h-80 bg-[#F59E0B]/15 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 left-10 w-72 h-72 bg-[#021427]/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute right-2 top-1/4 h-44 w-44 rounded-full bg-[#F59E0B]/15 blur-3xl animate-pulse sm:right-10 sm:h-80 sm:w-80" />
+        <div className="absolute bottom-1/4 left-2 h-40 w-40 rounded-full bg-[#021427]/20 blur-3xl animate-pulse sm:left-10 sm:h-72 sm:w-72" style={{ animationDelay: '1s' }} />
 
         <div className="relative z-10">
           {/* Location Info */}
-          <div className="pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+          <div className="hidden">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white/18 backdrop-blur-md rounded-3xl p-8 md:p-10 text-white border border-white/25 shadow-2xl overflow-hidden relative ring-1 ring-white/10">
                 {/* Subtle decorative accent */}
@@ -479,28 +475,28 @@ export function About() {
           </div>
 
           {/* CTA Section - Merged */}
-          <div className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="px-4 pb-8 pt-16 sm:px-6 sm:pt-20 md:pb-10 md:pt-24 lg:px-8">
             <div className="max-w-4xl mx-auto relative z-10 text-center">
               <div className="absolute inset-x-10 top-0 h-40 bg-white/6 blur-3xl rounded-full -z-10" />
               <h2 
-                className="text-3xl md:text-4xl font-bold mb-3 leading-tight"
+                className="mb-6 text-2xl font-bold leading-tight sm:text-3xl md:mb-7 md:text-4xl"
                 style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}
               >
                 <span className="bg-gradient-to-r from-white via-[#F59E0B] to-white bg-clip-text text-transparent">
-                  {t('readyToStartJourney')}
+                  {t("Ready to Start Your Journey?")}
                 </span>
               </h2>
 
               <p 
-                className="text-sm md:text-base text-white/85 mb-10 font-light"
+                className="mb-8 text-sm font-light text-white/85 sm:text-base md:mb-10"
                 style={{ fontFamily: "'Lora', 'Georgia', serif" }}
               >
-                {t('createUnforgettableMemories')}
+                {t("aboutCtaDesc")}
               </p>
 
               <div className={`flex flex-col sm:${flexDirection()} gap-4 justify-center items-center mb-8`}>
                 <Link to="/contact">
-                  <button className="group relative px-6 py-3 rounded-full font-semibold text-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <button className="group relative w-full overflow-hidden rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:w-auto">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#F59E0B] to-orange-500 group-hover:from-orange-600 group-hover:to-orange-700 transition-all duration-300" />
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                     <span className="relative z-10 text-white">
@@ -510,7 +506,7 @@ export function About() {
                 </Link>
 
                 <Link to="/offers">
-                  <button className="group relative px-6 py-3 rounded-full font-semibold text-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <button className="group relative w-full overflow-hidden rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:w-auto">
                     <div className="absolute inset-0 bg-gradient-to-r from-[#F59E0B] to-orange-500 group-hover:from-orange-600 group-hover:to-orange-700 transition-all duration-300" />
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                     <span className="relative z-10 text-white">

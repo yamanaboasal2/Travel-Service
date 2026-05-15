@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { MapPin, Users, Calendar, DollarSign, Plane, Hotel, Package, Briefcase, Search, Filter, Check, ChevronRight } from "lucide-react";
+import { MapPin, Users, Calendar, DollarSign, Plane, Hotel, Package, Briefcase, Search, Filter, Check, ChevronRight, CreditCard, Landmark, Wallet, Building2, ShieldCheck, LogIn } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
 import React, { useState } from "react";
 import heroBg from "../../assets/h1-bg01.jpg";
 import { ParallaxShowcase } from "../components/ParallaxShowcase";
-import { createBookingRequest } from "../services/apiService";
+import { createBookingRequest, isAuthenticated } from "../services/apiService";
+import { Link } from "react-router-dom";
 
 const wavyButtonStyle = `
   @keyframes wavyFlow {
@@ -49,6 +50,37 @@ const services = [
   { id: 2, name: "Hotel Reservations", icon: Hotel, color: "from-amber-500 to-orange-500", price: 150, description: "Upgrade or extend your hotel stay with trusted partners." },
   { id: 3, name: "Private Tour Guide", icon: Package, color: "from-green-500 to-emerald-500", price: 180, description: "Private local guide for a more personal itinerary." },
   { id: 4, name: "Visa Services", icon: Briefcase, color: "from-purple-500 to-pink-500", price: 90, description: "Document guidance and application support." },
+];
+
+const paymentMethods = [
+  {
+    name: "Pay at Office",
+    icon: Building2,
+    badge: "In person",
+    description: "Confirm now and pay when you visit our office.",
+    details: ["Office team will prepare your booking file.", "Bring your ID and booking confirmation."],
+  },
+  {
+    name: "Bank Transfer",
+    icon: Landmark,
+    badge: "Bank",
+    description: "Reserve your trip and receive bank transfer instructions.",
+    details: ["Transfer details are shared after confirmation.", "Your booking stays pending until payment is verified."],
+  },
+  {
+    name: "Cash on Arrival",
+    icon: Wallet,
+    badge: "Cash",
+    description: "Pay in cash when the trip or service starts.",
+    details: ["Available for eligible local services.", "Our team will confirm the cash amount before arrival."],
+  },
+  {
+    name: "Credit Card",
+    icon: CreditCard,
+    badge: "Card",
+    description: "Use a card-ready checkout flow for faster confirmation.",
+    details: ["Card details are collected only through a secure payment provider.", "We will contact you to complete the secure card payment."],
+  },
 ];
 
 const steps = [
@@ -110,6 +142,9 @@ export function Booking() {
     .filter((service) => selectedServices.includes(service.id))
     .reduce((total, service) => total + service.price, 0);
   const bookingTotal = (selectedTourDetails?.price || 0) + servicesTotal;
+  const selectedPaymentMethod =
+    paymentMethods.find((method) => method.name === formData.paymentMethod) || paymentMethods[0];
+  const SelectedPaymentIcon = selectedPaymentMethod.icon;
 
   const completeBooking = async () => {
     if (!selectedTourDetails || bookingSubmitting || bookingSuccess) return;
@@ -143,6 +178,53 @@ export function Booking() {
     } finally {
       setBookingSubmitting(false);
     }
+  };
+
+  if (!isAuthenticated()) {
+    return (
+      <>
+        <style>{wavyButtonStyle}</style>
+        <div
+          className="min-h-screen bg-cover bg-center bg-fixed text-[#021427]"
+          style={{
+            backgroundImage: `url(${heroBg})`,
+            backgroundAttachment: "fixed",
+          }}
+        >
+          <section className="relative flex min-h-[78vh] items-center justify-center overflow-hidden px-4 py-28">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#000816]/85 via-[#021427]/72 to-[#F59E0B]/18" />
+            <Card className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_30px_90px_rgba(2,20,39,0.28)] backdrop-blur-xl">
+              <div className="bg-gradient-to-r from-[#021427] via-[#0a5d7a] to-[#021427] px-7 py-6 text-white md:px-9">
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-[#F59E0B]">Login Required</p>
+                <h1 className="mt-3 text-4xl font-black" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+                  Sign in before booking
+                </h1>
+              </div>
+              <div className="p-7 md:p-9">
+                <div className="flex gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#021427] text-white shadow-lg shadow-[#021427]/15">
+                    <LogIn className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-[#021427]">You need an account to continue.</p>
+                    <p className="mt-2 text-sm font-semibold leading-7 text-[#1a3a52]">
+                      Please login or create a new account before filling booking information. This helps us keep your trip details, contact info, and payment choices connected to your profile.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/auth"
+                  className="mt-7 inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-[#9a4b08] via-[#c46312] to-[#F59E0B] px-7 py-4 text-base font-black text-white shadow-[0_14px_34px_rgba(154,75,8,0.28)] transition hover:scale-[1.03] hover:shadow-[0_18px_42px_rgba(2,20,39,0.32)] md:w-auto"
+                >
+                  Login / Sign Up
+                  <ChevronRight className="h-5 w-5" />
+                </Link>
+              </div>
+            </Card>
+          </section>
+        </div>
+      </>
+    );
   };
 
   return (
@@ -698,23 +780,131 @@ export function Booking() {
                     <div className="grid gap-3 text-sm font-semibold text-[#1a3a52] md:grid-cols-2">
                       <p>Date: <strong>{formData.travelDate || "Not selected"}</strong></p>
                       <p>Style: <strong>{formData.tripType}</strong></p>
-                      <p className="md:col-span-2">Payment: <strong>{formData.paymentMethod}</strong></p>
                     </div>
                     {formData.specialRequests && (
                       <p className="mt-4 rounded-xl bg-[#021427]/5 p-4 text-sm font-semibold leading-6 text-[#1a3a52]">
                         {formData.specialRequests}
                       </p>
                     )}
-                    <select
-                      value={formData.paymentMethod}
-                      onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="mt-4 w-full rounded-xl border-2 border-[#F59E0B]/30 bg-white/70 px-4 py-3 font-bold text-[#0a5d7a] outline-none transition focus:border-[#F59E0B]"
-                    >
-                      <option>Pay at Office</option>
-                      <option>Bank Transfer</option>
-                      <option>Cash on Arrival</option>
-                      <option>Credit Card</option>
-                    </select>
+                  </div>
+
+                  <div className="overflow-hidden rounded-3xl border border-white/70 bg-white/70 shadow-[0_18px_55px_rgba(2,20,39,0.10)]">
+                    <div className="border-b border-[#021427]/10 bg-gradient-to-r from-[#021427] via-[#0a5d7a] to-[#0f2d44] p-6 text-white">
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#F59E0B]">Checkout</p>
+                          <h3 className="mt-2 text-3xl font-black" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+                            Choose Payment Method
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold">
+                          <ShieldCheck className="h-4 w-4 text-[#F59E0B]" />
+                          Secure checkout
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 md:p-6">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {paymentMethods.map((method) => {
+                          const Icon = method.icon;
+                          const isSelected = formData.paymentMethod === method.name;
+
+                          return (
+                            <button
+                              key={method.name}
+                              type="button"
+                              onClick={() => setFormData({ ...formData, paymentMethod: method.name })}
+                              className={`group rounded-2xl border-2 p-5 text-left transition-all duration-300 ${
+                                isSelected
+                                  ? "border-[#F59E0B] bg-[#fff8ed] shadow-[0_16px_36px_rgba(245,158,11,0.16)]"
+                                  : "border-[#021427]/10 bg-white/75 hover:border-[#F59E0B]/60 hover:bg-white"
+                              }`}
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg ${
+                                  isSelected ? "bg-[#F59E0B]" : "bg-[#021427] group-hover:bg-[#0a5d7a]"
+                                }`}>
+                                  <Icon className="h-6 w-6" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <h4 className="text-lg font-black text-[#021427]">{method.name}</h4>
+                                    <span className="rounded-full bg-[#021427]/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[#0a5d7a]">
+                                      {method.badge}
+                                    </span>
+                                  </div>
+                                  <p className="mt-2 text-sm font-semibold leading-6 text-[#1a3a52]">{method.description}</p>
+                                </div>
+                                {isSelected && (
+                                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F59E0B] text-white">
+                                    <Check className="h-4 w-4" />
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="mt-5 rounded-2xl border border-[#021427]/10 bg-gradient-to-br from-[#f8fbfc] to-white p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#021427] text-white">
+                            <SelectedPaymentIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black uppercase tracking-[0.16em] text-[#F59E0B]">Selected Method</p>
+                            <h4 className="mt-1 text-2xl font-black text-[#021427]">{selectedPaymentMethod.name}</h4>
+                            <ul className="mt-3 grid gap-2 text-sm font-semibold leading-6 text-[#1a3a52] md:grid-cols-2">
+                              {selectedPaymentMethod.details.map((detail) => (
+                                <li key={detail} className="flex gap-2">
+                                  <Check className="mt-1 h-4 w-4 shrink-0 text-[#F59E0B]" />
+                                  <span>{detail}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        {formData.paymentMethod === "Credit Card" && (
+                          <div className="mt-5 grid gap-4 rounded-2xl border border-[#F59E0B]/20 bg-[#fff8ed] p-4 md:grid-cols-4">
+                            <input
+                              type="text"
+                              placeholder="Cardholder name"
+                              className="rounded-xl border border-[#021427]/10 bg-white px-4 py-3 text-sm font-bold text-[#021427] outline-none focus:border-[#F59E0B] md:col-span-2"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Card number"
+                              inputMode="numeric"
+                              className="rounded-xl border border-[#021427]/10 bg-white px-4 py-3 text-sm font-bold text-[#021427] outline-none focus:border-[#F59E0B] md:col-span-2"
+                            />
+                            <input
+                              type="text"
+                              placeholder="MM / YY"
+                              className="rounded-xl border border-[#021427]/10 bg-white px-4 py-3 text-sm font-bold text-[#021427] outline-none focus:border-[#F59E0B]"
+                            />
+                            <input
+                              type="text"
+                              placeholder="CVV"
+                              inputMode="numeric"
+                              className="rounded-xl border border-[#021427]/10 bg-white px-4 py-3 text-sm font-bold text-[#021427] outline-none focus:border-[#F59E0B]"
+                            />
+                            <p className="text-sm font-semibold leading-6 text-[#1a3a52] md:col-span-2">
+                              Final card processing will be completed securely by our team.
+                            </p>
+                          </div>
+                        )}
+
+                        {formData.paymentMethod === "Bank Transfer" && (
+                          <div className="mt-5 grid gap-3 rounded-2xl border border-[#021427]/10 bg-white p-4 text-sm font-bold text-[#1a3a52] md:grid-cols-3">
+                            <p>Bank: <span className="text-[#021427]">To be confirmed</span></p>
+                            <p>Reference: <span className="text-[#021427]">Booking name</span></p>
+                            <p>Status: <span className="text-[#F59E0B]">Pending verification</span></p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
                   <div className="bg-gradient-to-br from-[#021427] to-[#0a5d7a] p-6 rounded-3xl text-white shadow-[0_22px_55px_rgba(2,20,39,0.22)]">
